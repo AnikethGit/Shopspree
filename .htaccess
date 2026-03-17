@@ -1,0 +1,24 @@
+# Minimal .htaccess for PHP e-commerce site
+
+# Set index file priority
+DirectoryIndex index.php index.html
+
+# Disable directory browsing
+Options -Indexes
+
+# Enable mod_rewrite if available
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /ecommerce/
+</IfModule>
+
+# Block access to sensitive files
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sql|conf)$">
+    Require all denied
+</FilesMatch>
+
+# Set UTF-8 encoding
+AddDefaultCharset UTF-8
+
+# Custom error pages
+ErrorDocument 404 /ecommerce/404.html
