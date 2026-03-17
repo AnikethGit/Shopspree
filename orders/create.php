@@ -1,7 +1,8 @@
 <?php
 /**
- * Order Creation & Processing
- * Processes checkout form, creates order, and clears cart
+ * Order Creation & Processing (After Payment)
+ * Processes payment data, creates order, and clears cart
+ * This is called AFTER successful payment processing
  */
 
 error_reporting(E_ALL);
@@ -10,6 +11,18 @@ ini_set('display_errors', 1);
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/send_receipt.php';
+
+// Check if payment has been processed
+if (!isset($_SESSION['payment_processed']) || $_SESSION['payment_processed'] !== true) {
+    add_message('Payment must be processed first', 'error');
+    redirect('../checkout.php');
+}
+
+// Retrieve checkout data from session
+if (!isset($_SESSION['checkout_data'])) {
+    add_message('Checkout data not found', 'error');
+    redirect('../checkout.php');
+}
 
 // Inline cart functions
 function is_cart_empty() {
@@ -93,42 +106,25 @@ function calculate_cart_totals($cart_items, $tax_rate = 0.08, $shipping = 50) {
     ];
 }
 
-// Only accept POST requests
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('checkout.php');
-}
-
-// Check if cart is empty
-if (is_cart_empty()) {
-    add_message('Your cart is empty', 'error');
-    redirect('cart.php');
-}
-
 try {
-    // Validate required fields
-    $required_fields = ['email', 'full_name', 'phone', 'address', 'city', 'state', 'postal_code', 'payment_method'];
-    $errors = [];
-    $data = [];
+    // Check if cart is empty
+    if (is_cart_empty()) {
+        add_message('Your cart is empty', 'error');
+        redirect('../cart.php');
+    }
 
+    // Get checkout and payment data
+    $checkout_data = $_SESSION['checkout_data'];
+    $payment_details = $_SESSION['payment_details'] ?? [];
+    $transaction_id = $_SESSION['transaction_id'] ?? '';
+    $payment_method = $checkout_data['payment_method'];
+    
+    // Validate required checkout fields
+    $required_fields = ['email', 'full_name', 'phone', 'address', 'city', 'state', 'postal_code'];
     foreach ($required_fields as $field) {
-        if (empty($_POST[$field])) {
-            $errors[] = ucfirst(str_replace('_', ' ', $field)) . ' is required';
-        } else {
-            $data[$field] = sanitize($_POST[$field]);
+        if (empty($checkout_data[$field])) {
+            throw new Exception(ucfirst(str_replace('_', ' ', $field)) . ' is required');
         }
-    }
-
-    if (!empty($errors)) {
-        foreach ($errors as $error) {
-            add_message($error, 'error');
-        }
-        redirect('checkout.php');
-    }
-
-    // Validate email
-    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        add_message('Invalid email address', 'error');
-        redirect('checkout.php');
     }
 
     // Get cart data
@@ -137,7 +133,7 @@ try {
 
     if (empty($cart_items)) {
         add_message('Your cart is empty or products not found', 'error');
-        redirect('cart.php');
+        redirect('../cart.php');
     }
 
     // Validate stock
@@ -154,12 +150,10 @@ try {
             if ($result && $result->num_rows > 0) {
                 $product = $result->fetch_assoc();
                 if (intval($product['quantity']) < $qty) {
-                    add_message('Product ' . htmlspecialchars($item['name']) . ' is out of stock', 'error');
-                    redirect('cart.php');
+                    throw new Exception('Product ' . htmlspecialchars($item['name']) . ' is out of stock');
                 }
             } else {
-                add_message('Product not found', 'error');
-                redirect('cart.php');
+                throw new Exception('Product not found');
             }
             $stmt->close();
         }
@@ -169,12 +163,13 @@ try {
     $order_id = 'ORD-' . strtoupper(uniqid());
     $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
     
-    $shipping_address = $data['address'] . ', ' . $data['city'] . ', ' . $data['state'];
-    $payment_method = $data['payment_method'];
-    $notes = isset($_POST['notes']) ? sanitize($_POST['notes']) : '';
-    $order_status = 'Pending';
+    $shipping_address = $checkout_data['address'] . ', ' . $checkout_data['city'] . ', ' . $checkout_data['state'];
+    $notes = isset($checkout_data['notes']) ? sanitize($checkout_data['notes']) : '';
     
-    // Use conditional query based on whether user is logged in
+    // Determine order status based on payment method
+    $order_status = ($payment_method === 'COD') ? 'Pending' : 'Payment Received';
+    
+    // Prepare order insert query
     if ($user_id !== null) {
         // User logged in - include user_id
         $order_query = "INSERT INTO orders (
@@ -188,28 +183,34 @@ try {
                             shipping_postal_code, 
                             total_amount, 
                             payment_method, 
+                            payment_status,
+                            transaction_id,
+                            payment_details,
                             order_status, 
                             notes, 
                             created_at
                         ) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         if ($order_stmt = $conn->prepare($order_query)) {
-            // 12 values: order_id(s), user_id(i), email(s), phone(s), 
-            // shipping_address(s), city(s), state(s), postal_code(s), 
-            // total(d), payment_method(s), status(s), notes(s)
+            $payment_details_json = json_encode($payment_details);
+            $payment_status = 'Completed';
+            
             $bind_result = $order_stmt->bind_param(
-                "sissssssdsss",
+                "sissssssdsssss",
                 $order_id,
                 $user_id,
-                $data['email'],
-                $data['phone'],
+                $checkout_data['email'],
+                $checkout_data['phone'],
                 $shipping_address,
-                $data['city'],
-                $data['state'],
-                $data['postal_code'],
+                $checkout_data['city'],
+                $checkout_data['state'],
+                $checkout_data['postal_code'],
                 $totals['total'],
                 $payment_method,
+                $payment_status,
+                $transaction_id,
+                $payment_details_json,
                 $order_status,
                 $notes
             );
@@ -232,27 +233,33 @@ try {
                             shipping_postal_code, 
                             total_amount, 
                             payment_method, 
+                            payment_status,
+                            transaction_id,
+                            payment_details,
                             order_status, 
                             notes, 
                             created_at
                         ) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         if ($order_stmt = $conn->prepare($order_query)) {
-            // 11 values: order_id(s), email(s), phone(s), 
-            // shipping_address(s), city(s), state(s), postal_code(s), 
-            // total(d), payment_method(s), status(s), notes(s)
+            $payment_details_json = json_encode($payment_details);
+            $payment_status = 'Completed';
+            
             $bind_result = $order_stmt->bind_param(
-                "sssssssdsss",
+                "sssssssdssss",
                 $order_id,
-                $data['email'],
-                $data['phone'],
+                $checkout_data['email'],
+                $checkout_data['phone'],
                 $shipping_address,
-                $data['city'],
-                $data['state'],
-                $data['postal_code'],
+                $checkout_data['city'],
+                $checkout_data['state'],
+                $checkout_data['postal_code'],
                 $totals['total'],
                 $payment_method,
+                $payment_status,
+                $transaction_id,
+                $payment_details_json,
                 $order_status,
                 $notes
             );
@@ -281,8 +288,6 @@ try {
             $item_price = floatval($item['price']);
             
             if ($item_stmt = $conn->prepare($item_query)) {
-                // Type string: order_id(i), product_id(i), product_name(s), 
-                // quantity(i), price(d), subtotal(d)
                 $item_bind = $item_stmt->bind_param(
                     "iisidd",
                     $order_db_id,
@@ -317,16 +322,22 @@ try {
         $email_sent = send_order_receipt(
             $order_id,
             $order_db_id,
-            $data['email'],
-            $data['phone'],
+            $checkout_data['email'],
+            $checkout_data['phone'],
             $cart_items,
             $totals,
             $payment_method,
-            $shipping_address
+            $shipping_address,
+            $payment_details
         );
         
-        // Clear cart from SESSION
+        // Clear session data
         $_SESSION['cart'] = [];
+        unset($_SESSION['checkout_data']);
+        unset($_SESSION['payment_processed']);
+        unset($_SESSION['payment_details']);
+        unset($_SESSION['transaction_id']);
+        unset($_SESSION['payment_status']);
         
         // Set session variables for thank you page
         $_SESSION['last_order_id'] = $order_id;
@@ -337,14 +348,19 @@ try {
         redirect('thank_you.php');
     } else {
         error_log("Order execution failed: " . $order_stmt->error);
-        add_message('Error creating order. Please try again.', 'error');
-        redirect('checkout.php');
+        throw new Exception('Error creating order. Please try again.');
     }
 
 } catch (Exception $e) {
     error_log("Exception in order creation: " . $e->getMessage());
     add_message('Error processing order: ' . htmlspecialchars($e->getMessage()), 'error');
-    redirect('checkout.php');
+    
+    // Clear payment session on error
+    unset($_SESSION['payment_processed']);
+    unset($_SESSION['payment_details']);
+    unset($_SESSION['transaction_id']);
+    
+    redirect('../checkout.php');
 }
 
 ?>
