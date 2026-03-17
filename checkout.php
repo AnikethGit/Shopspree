@@ -236,8 +236,8 @@ try {
 
             <div class="row g-5">
                 <div class="col-md-12 col-lg-8">
-                    <!-- Single form containing ALL checkout fields -->
-                    <form method="post" action="orders/create.php">
+                    <!-- Checkout Form -->
+                    <form method="post" action="orders/payment.php" id="checkoutForm">
                         <h5 class="mb-4">Billing Details</h5>
                         <div class="row g-3">
                             <div class="col-md-12">
@@ -298,14 +298,15 @@ try {
                             </div>
                         </div>
 
-                        <!-- Payment Method Section Inside Form -->
-                        <h5 class="mb-4 mt-5">Payment Method</h5>
+                        <!-- Payment Method Selection -->
+                        <h5 class="mb-4 mt-5">Select Payment Method</h5>
                         <div class="row g-4 text-start mb-4">
                             <div class="col-12">
                                 <div class="form-check">
                                     <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="COD" value="COD" checked>
                                     <label class="form-check-label pt-1" for="COD">
-                                        Cash on Delivery (COD)
+                                        <strong>Cash on Delivery (COD)</strong>
+                                        <p class="text-muted small mb-0">Pay when you receive your order</p>
                                     </label>
                                 </div>
                             </div>
@@ -313,7 +314,8 @@ try {
                                 <div class="form-check">
                                     <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="Card" value="Credit Card">
                                     <label class="form-check-label pt-1" for="Card">
-                                        Credit/Debit Card
+                                        <strong>Credit/Debit Card</strong>
+                                        <p class="text-muted small mb-0">Visa, Mastercard, or American Express</p>
                                     </label>
                                 </div>
                             </div>
@@ -321,14 +323,17 @@ try {
                                 <div class="form-check">
                                     <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="Bank" value="Bank Transfer">
                                     <label class="form-check-label pt-1" for="Bank">
-                                        Bank Transfer
+                                        <strong>Bank Transfer</strong>
+                                        <p class="text-muted small mb-0">Direct bank transfer / Net banking</p>
                                     </label>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Submit Button Inside Form -->
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-3 text-uppercase w-100" name="placeOrder">Place Order</button>
+                        <!-- Proceed to Payment Button -->
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-3 text-uppercase w-100" name="proceedToPayment">
+                            <i class="fas fa-credit-card me-2"></i>Proceed to Payment
+                        </button>
                     </form>
                 </div>
 
@@ -408,5 +413,19 @@ try {
     <script src="lib/wow/wow.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="js/main.js"></script>
+
+    <script>
+        // Handle checkout form submission
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = new FormData(this);
+            
+            // Store checkout data in session via AJAX or direct submission
+            // For now, we'll just submit to payment.php which will handle the session
+            this.submit();
+        });
+    </script>
 </body>
 </html>
