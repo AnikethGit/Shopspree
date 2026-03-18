@@ -175,6 +175,7 @@ if (is_array($_SESSION['cart'])) {
                         <div class="navbar-nav ms-auto py-0">
                             <a href="index.php" class="nav-item nav-link">Home</a>
                             <a href="shop.php" class="nav-item nav-link active">Shop</a>
+                            <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
                             <a href="cart.php" class="nav-item nav-link">Cart</a>
                             <a href="checkout.php" class="nav-item nav-link">Checkout</a>
                         </div>

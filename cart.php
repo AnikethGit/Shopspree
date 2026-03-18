@@ -140,6 +140,7 @@ try {
                 <a href="cart.php" class="btn btn-outline-primary"><i class="fas fa-shopping-cart me-2"></i>Cart: $<?php echo number_format($cart_total, 2); ?></a>
                 <a href="shop.php" class="btn btn-outline-primary ms-2">Shop</a>
                 <a href="index.php" class="btn btn-outline-primary ms-2">Home</a>
+                <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
             </div>
         </div>
     </div>

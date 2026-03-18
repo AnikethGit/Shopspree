@@ -662,7 +662,7 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
                     &copy; <a class="border-bottom" href="#">Shopspree</a>, All Right Reserved.
                 </div>
                 <div class="text-center text-md-end">
-                    <a class="border-bottom" href="#">Order Tracking</a>
+                    <a class="border-bottom" href="track.php">Order Tracking</a>
                 </div>
             </div>
         </div>
