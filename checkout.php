@@ -98,7 +98,27 @@ try {
     $totals = calculate_cart_totals($cart_items, 0.08, 50);
     $cart_total = $totals['total'];
     $user = current_user();
-    
+
+    // Handle checkout submission: store in session then redirect to payment step
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['proceedToPayment'])) {
+        $checkout_data = [
+            'full_name'      => sanitize($_POST['full_name'] ?? ''),
+            'email'          => sanitize($_POST['email'] ?? ''),
+            'address'        => sanitize($_POST['address'] ?? ''),
+            'city'           => sanitize($_POST['city'] ?? ''),
+            'state'          => sanitize($_POST['state'] ?? ''),
+            'postal_code'    => sanitize($_POST['postal_code'] ?? ''),
+            'phone'          => sanitize($_POST['phone'] ?? ''),
+            'notes'          => sanitize($_POST['notes'] ?? ''),
+            'payment_method' => $_POST['payment_method'] ?? 'COD',
+            'total'          => $totals['total'],
+        ];
+
+        $_SESSION['checkout_data'] = $checkout_data;
+        redirect('orders/payment.php');
+        exit;
+    }
+
 } catch (Exception $e) {
     die('ERROR: ' . htmlspecialchars($e->getMessage()));
 }
@@ -238,7 +258,7 @@ try {
             <div class="row g-5">
                 <div class="col-md-12 col-lg-8">
                     <!-- Checkout Form -->
-                    <form method="post" action="orders/payment.php" id="checkoutForm">
+                    <form method="post" action="checkout.php" id="checkoutForm">
                         <h5 class="mb-4">Billing Details</h5>
                         <div class="row g-3">
                             <div class="col-md-12">
@@ -307,7 +327,16 @@ try {
                                     <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="COD" value="COD" checked>
                                     <label class="form-check-label pt-1" for="COD">
                                         <strong>Cash on Delivery (COD)</strong>
-                                        <p class="text-muted small mb-0">Pay when you receive your order</p>
+                                        <p class="text-muted small mb-0">Pay in cash when your order is delivered.</p>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="PayPal" value="PayPal">
+                                    <label class="form-check-label pt-1" for="PayPal">
+                                        <strong>PayPal</strong>
+                                        <p class="text-muted small mb-0">Pay securely using your PayPal account.</p>
                                     </label>
                                 </div>
                             </div>
@@ -316,16 +345,16 @@ try {
                                     <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="Card" value="Credit Card">
                                     <label class="form-check-label pt-1" for="Card">
                                         <strong>Credit/Debit Card</strong>
-                                        <p class="text-muted small mb-0">Visa, Mastercard, or American Express</p>
+                                        <p class="text-muted small mb-0">Visa, Mastercard, or American Express.</p>
                                     </label>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-check">
-                                    <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="Bank" value="Bank Transfer">
-                                    <label class="form-check-label pt-1" for="Bank">
-                                        <strong>Bank Transfer</strong>
-                                        <p class="text-muted small mb-0">Direct bank transfer / Net banking</p>
+                                    <input class="form-check-input bg-primary border-0" type="radio" name="payment_method" id="Klarna" value="Klarna">
+                                    <label class="form-check-label pt-1" for="Klarna">
+                                        <strong>Klarna</strong>
+                                        <p class="text-muted small mb-0">Buy now, pay later with Klarna.</p>
                                     </label>
                                 </div>
                             </div>
@@ -414,19 +443,5 @@ try {
     <script src="lib/wow/wow.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="js/main.js"></script>
-
-    <script>
-        // Handle checkout form submission
-        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Collect form data
-            const formData = new FormData(this);
-            
-            // Store checkout data in session via AJAX or direct submission
-            // For now, we'll just submit to payment.php which will handle the session
-            this.submit();
-        });
-    </script>
 </body>
 </html>
