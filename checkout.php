@@ -74,14 +74,18 @@ try {
         }
         
         $subtotal = round($subtotal, 2);
+
+        // Apply shipping only for orders under $200
+        $effective_shipping = ($subtotal > 0 && $subtotal < 200) ? floatval($shipping) : 0.0;
+
         $tax = round($subtotal * floatval($tax_rate), 2);
-        $total = round($subtotal + $tax + floatval($shipping), 2);
+        $total = round($subtotal + $tax + $effective_shipping, 2);
         
         return [
             'subtotal' => $subtotal,
             'tax' => $tax,
             'tax_rate' => floatval($tax_rate) * 100,
-            'shipping' => floatval($shipping),
+            'shipping' => $effective_shipping,
             'total' => $total,
             'item_count' => count($cart_items)
         ];
