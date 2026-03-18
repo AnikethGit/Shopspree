@@ -11,9 +11,9 @@
 // Find them in your cPanel > Databases > MySQL Databases
 
 $servername = "localhost"; // Usually 'localhost' on Hostinger
-$username = "u701659873_dist_user"; // Your database user (from cPanel)
-$password = "bAAbA@35"; // Your database password (from cPanel)
-$dbname = "u701659873_distributor"; // Your database name (from cPanel)
+$username = ""; // Your database user (from cPanel)
+$password = ""; // Your database password (from cPanel)
+$dbname = ""; // Your database name (from cPanel)
 
 // ============================================
 // MySQLi Connection Setup
