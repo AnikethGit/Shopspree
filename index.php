@@ -338,7 +338,7 @@ if (is_array($_SESSION['cart'])) {
                                 foreach($categories_array as $cat) {
                                     echo "<li>
                                         <div class='categories-bars-item'>
-                                            <a href='category.php?id=" . htmlspecialchars($cat['id']) . "'>" . htmlspecialchars($cat['name']) . "</a>
+                                            <a href='shop.php?category=" . htmlspecialchars($cat['id']) . "'>" . htmlspecialchars($cat['name']) . "</a>
                                             <span>(" . htmlspecialchars($cat['count']) . ")</span>
                                         </div>
                                     </li>";
@@ -381,7 +381,7 @@ if (is_array($_SESSION['cart'])) {
                                         foreach($categories_array as $cat) {
                                             echo "<li>
                                                 <div class='categories-bars-item'>
-                                                    <a href='category.php?id=" . htmlspecialchars($cat['id']) . "'>" . htmlspecialchars($cat['name']) . "</a>
+                                                    <a href='shop.php?category=" . htmlspecialchars($cat['id']) . "'>" . htmlspecialchars($cat['name']) . "</a>
                                                     <span>(" . htmlspecialchars($cat['count']) . ")</span>
                                                 </div>
                                             </li>";
@@ -424,7 +424,7 @@ if (is_array($_SESSION['cart'])) {
                             <img src="img/carousel-2.png" class="img-fluid w-100" alt="Image">
                         </div>
                         <div class="col-xl-6 carousel-content p-4">
-                            <h4 class="text-uppercase fw-bold mb-4 wow fadeInRight" data-wow-delay="0.1s"
+                            <h4 class="text-uppercase fw-bold mb-4 wow FadeInRight" data-wow-delay="0.1s"
                                 style="letter-spacing: 3px;">Save Up To A $200</h4>
                             <h1 class="display-3 text-capitalize mb-4 wow fadeInRight" data-wow-delay="0.3s">On Selected
                                 Laptops &amp; Desktop Or Smartphone</h1>
@@ -465,7 +465,7 @@ if (is_array($_SESSION['cart'])) {
     <!-- Services Start -->
     <div class="container-fluid px-0">
         <div class="row g-0">
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
+            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow FadeInUp" data-wow-delay="0.1s">
                 <div class="p-4">
                     <div class="d-inline-flex align-items-center">
                         <i class="fa fa-sync-alt fa-2x text-primary"></i>
@@ -476,7 +476,7 @@ if (is_array($_SESSION['cart'])) {
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-2 border-end wow fadeInUp" data-wow-delay="0.2s">
+            <div class="col-6 col-md-4 col-lg-2 border-end wow FadeInUp" data-wow-delay="0.2s">
                 <div class="p-4">
                     <div class="d-flex align-items-center">
                         <i class="fab fa-telegram-plane fa-2x text-primary"></i>
@@ -487,7 +487,7 @@ if (is_array($_SESSION['cart'])) {
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-2 border-end wow fadeInUp" data-wow-delay="0.3s">
+            <div class="col-6 col-md-4 col-lg-2 border-end wow FadeInUp" data-wow-delay="0.3s">
                 <div class="p-4">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-life-ring fa-2x text-primary"></i>
@@ -498,7 +498,7 @@ if (is_array($_SESSION['cart'])) {
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-2 border-end wow fadeInUp" data-wow-delay="0.4s">
+            <div class="col-6 col-md-4 col-lg-2 border-end wow FadeInUp" data-wow-delay="0.4s">
                 <div class="p-4">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-credit-card fa-2x text-primary"></i>
@@ -509,7 +509,7 @@ if (is_array($_SESSION['cart'])) {
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-2 border-end wow fadeInUp" data-wow-delay="0.5s">
+            <div class="col-6 col-md-4 col-lg-2 border-end wow FadeInUp" data-wow-delay="0.5s">
                 <div class="p-4">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-lock fa-2x text-primary"></i>
@@ -520,7 +520,7 @@ if (is_array($_SESSION['cart'])) {
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-2 border-end wow fadeInUp" data-wow-delay="0.6s">
+            <div class="col-6 col-md-4 col-lg-2 border-end wow FadeInUp" data-wow-delay="0.6s">
                 <div class="p-4">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-blog fa-2x text-primary"></i>
@@ -539,8 +539,8 @@ if (is_array($_SESSION['cart'])) {
     <div class="container-fluid bg-light py-5">
         <div class="container">
             <div class="row g-4">
-                <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.2s">
-                    <a href="category.php?id=1" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
+                <div class="col-lg-6 wow FadeInLeft" data-wow-delay="0.2s">
+                    <a href="shop.php?category=1" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
                         <div>
                             <p class="text-muted mb-3">Find The Best Camera for You!</p>
                             <h3 class="text-primary">Smart Camera</h3>
@@ -550,8 +550,8 @@ if (is_array($_SESSION['cart'])) {
                         <img src="img/product-1.png" class="img-fluid" alt="">
                     </a>
                 </div>
-                <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.3s">
-                    <a href="category.php?id=2" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
+                <div class="col-lg-6 wow FadeInRight" data-wow-delay="0.3s">
+                    <a href="shop.php?category=2" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
                         <div>
                             <p class="text-muted mb-3">Find The Best Watches for You!</p>
                             <h3 class="text-primary">Smart Watch</h3>
@@ -572,10 +572,10 @@ if (is_array($_SESSION['cart'])) {
         <div class="container py-5">
             <div class="tab-class">
                 <div class="row g-4">
-                    <div class="col-lg-4 text-start wow fadeInLeft" data-wow-delay="0.1s">
+                    <div class="col-lg-4 text-start wow FadeInLeft" data-wow-delay="0.1s">
                         <h1>Our Products</h1>
                     </div>
-                    <div class="col-lg-8 text-end wow fadeInRight" data-wow-delay="0.1s">
+                    <div class="col-lg-8 text-end wow FadeInRight" data-wow-delay="0.1s">
                         <ul class="nav nav-pills d-inline-flex text-center mb-5">
                             <li class="nav-item mb-4">
                                 <a class="d-flex mx-2 py-2 bg-light rounded-pill active" data-bs-toggle="pill"
@@ -619,7 +619,7 @@ if (is_array($_SESSION['cart'])) {
                                     $badge = '';
                             ?>
                             <div class="col-md-6 col-lg-4 col-xl-3">
-                                <div class="product-item rounded wow fadeInUp" data-wow-delay="<?php echo $delay; ?>s">
+                                <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
                                             <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
@@ -631,7 +631,7 @@ if (is_array($_SESSION['cart'])) {
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="category.php?id=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
+                                            <a href="shop.php?category=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
                                             <a href="single.php?id=<?php echo $product_id; ?>" class="d-block h4"><?php echo $product_name; ?></a>
                                             <del class="me-2 fs-5">$<?php echo $original_price; ?></del>
                                             <span class="text-primary fs-5">$<?php echo $product_price; ?></span>
@@ -692,7 +692,7 @@ if (is_array($_SESSION['cart'])) {
                                     $category_id = htmlspecialchars($product['category_id'] ?? '');
                             ?>
                             <div class="col-md-6 col-lg-4 col-xl-3">
-                                <div class="product-item rounded wow fadeInUp" data-wow-delay="<?php echo $delay; ?>s">
+                                <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
                                             <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
@@ -702,7 +702,7 @@ if (is_array($_SESSION['cart'])) {
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="category.php?id=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
+                                            <a href="shop.php?category=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
                                             <a href="single.php?id=<?php echo $product_id; ?>" class="d-block h4"><?php echo $product_name; ?></a>
                                             <del class="me-2 fs-5">$<?php echo $original_price; ?></del>
                                             <span class="text-primary fs-5">$<?php echo $product_price; ?></span>
@@ -761,7 +761,7 @@ if (is_array($_SESSION['cart'])) {
                                     $category_id = htmlspecialchars($product['category_id'] ?? '');
                             ?>
                             <div class="col-md-6 col-lg-4 col-xl-3">
-                                <div class="product-item rounded wow fadeInUp" data-wow-delay="<?php echo $delay; ?>s">
+                                <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
                                             <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
@@ -770,7 +770,7 @@ if (is_array($_SESSION['cart'])) {
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="category.php?id=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
+                                            <a href="shop.php?category=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
                                             <a href="single.php?id=<?php echo $product_id; ?>" class="d-block h4"><?php echo $product_name; ?></a>
                                             <del class="me-2 fs-5">$<?php echo $original_price; ?></del>
                                             <span class="text-primary fs-5">$<?php echo $product_price; ?></span>
@@ -829,7 +829,7 @@ if (is_array($_SESSION['cart'])) {
                                     $category_id = htmlspecialchars($product['category_id'] ?? '');
                             ?>
                             <div class="col-md-6 col-lg-4 col-xl-3">
-                                <div class="product-item rounded wow fadeInUp" data-wow-delay="<?php echo $delay; ?>s">
+                                <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
                                             <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
@@ -838,7 +838,7 @@ if (is_array($_SESSION['cart'])) {
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="category.php?id=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
+                                            <a href="shop.php?category=<?php echo $category_id; ?>" class="d-block mb-2"><?php echo $category; ?></a>
                                             <a href="single.php?id=<?php echo $product_id; ?>" class="d-block h4"><?php echo $product_name; ?></a>
                                             <del class="me-2 fs-5">$<?php echo $original_price; ?></del>
                                             <span class="text-primary fs-5">$<?php echo $product_price; ?></span>
@@ -890,7 +890,7 @@ if (is_array($_SESSION['cart'])) {
     <div class="container-fluid bg-dark text-light footer pt-5">
         <div class="container py-5">
             <div class="row g-5">
-                <div class="col-md-6 col-lg-6 col-xl-3 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.1s">
                     <h5 class="text-light mb-4">Why Choose Us</h5>
                     <p class="mb-4">Typesetting industry's standard dummy text ever since the 1500s,
                         when an unknown printer took a galley of type and scrambled it to make a type specimen
@@ -899,7 +899,7 @@ if (is_array($_SESSION['cart'])) {
                         <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="">
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
                     <h5 class="text-light mb-4">Address</h5>
                     <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
                     <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
@@ -915,7 +915,7 @@ if (is_array($_SESSION['cart'])) {
                                 class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow fadeInUp" data-wow-delay="0.5s">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
                     <h5 class="text-light mb-4">Quick Links</h5>
                     <a class="btn btn-link" href="">About Us</a>
                     <a class="btn btn-link" href="">Contact Us</a>
@@ -923,7 +923,7 @@ if (is_array($_SESSION['cart'])) {
                     <a class="btn btn-link" href="">Terms &amp; Condition</a>
                     <a class="btn btn-link" href="">Support</a>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow fadeInUp" data-wow-delay="0.7s">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
                     <h5 class="text-light mb-4">Newsletter</h5>
                     <p>Dolor amet sit diam vero eos. Sed clita kasd sed sea sed dolore</p>
                     <div class="position-relative w-100 mt-3">
