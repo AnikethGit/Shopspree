@@ -455,7 +455,7 @@ function simulate_payment_processing($payment_method) {
                         <span><strong>Secure Payment:</strong> Your payment information is encrypted and secure. This is a demo payment system.</span>
                     </div>
 
-                    <form method="post" action="payment.php" id="paymentForm">
+                    <form method="post" action="payment.php" id="paymentForm" onsubmit="showProcessing(); return true;">
 
                         <!-- Credit Card Payment -->
                         <?php if ($payment_method === 'Credit Card'): ?>
