@@ -27,74 +27,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     $payment_details = [];
     
-    // Validate payment method
+    // Capture payment details based on method (no hard failures for demo)
     if ($payment_method === 'Credit Card') {
-        // Validate card details
+        // Capture card details
         $card_number = preg_replace('/\s+/', '', $_POST['card_number'] ?? '');
         $card_holder = sanitize($_POST['card_holder'] ?? '');
         $expiry_month = intval($_POST['expiry_month'] ?? 0);
         $expiry_year = intval($_POST['expiry_year'] ?? 0);
         $cvv = preg_replace('/\D/', '', $_POST['cvv'] ?? '');
         
-        // Validate card number (Luhn algorithm for basic validation)
-        if (!validate_card_number($card_number)) {
-            $errors[] = 'Invalid card number';
-        }
-        
-        // Validate card holder name
-        if (empty($card_holder) || strlen($card_holder) < 3) {
-            $errors[] = 'Invalid cardholder name';
-        }
-        
-        // Validate expiry date
-        $current_month = date('n');
-        $current_year = date('Y');
-        if ($expiry_year < $current_year || ($expiry_year === $current_year && $expiry_month < $current_month)) {
-            $errors[] = 'Card has expired';
-        }
-        
-        // Validate CVV
-        if (!preg_match('/^\d{3,4}$/', $cvv)) {
-            $errors[] = 'Invalid CVV';
-        }
-        
-        if (empty($errors)) {
-            // Dummy payment success - mask card number for storage
-            $masked_card = 'XXXX-XXXX-XXXX-' . substr($card_number, -4);
-            $payment_details = [
-                'card_number' => $masked_card,
-                'card_holder' => $card_holder,
-                'expiry' => $expiry_month . '/' . $expiry_year
-            ];
-        }
+        // For demo purposes, do not block on validation.
+        // Browser "required" attributes handle basic UX validation, and
+        // the backend always treats the payment as successful.
+        $masked_card = 'XXXX-XXXX-XXXX-' . substr($card_number ?: '0000', -4);
+        $payment_details = [
+            'card_number' => $masked_card,
+            'card_holder' => !empty($card_holder) ? $card_holder : 'Demo User',
+            'expiry' => (($expiry_month ?: 1) . '/' . ($expiry_year ?: (date('Y') + 1)))
+        ];
         
     } elseif ($payment_method === 'Bank Transfer') {
-        // Validate bank details
+        // Capture bank details
         $account_holder = sanitize($_POST['account_holder'] ?? '');
         $account_number = preg_replace('/\D/', '', $_POST['account_number'] ?? '');
         $bank_name = sanitize($_POST['bank_name'] ?? '');
         
-        if (empty($account_holder) || strlen($account_holder) < 3) {
-            $errors[] = 'Invalid account holder name';
-        }
-        
-        if (empty($account_number) || strlen($account_number) < 8) {
-            $errors[] = 'Invalid account number';
-        }
-        
-        if (empty($bank_name)) {
-            $errors[] = 'Please select a bank';
-        }
-        
-        if (empty($errors)) {
-            // Dummy payment success - mask account number for storage
-            $masked_account = 'XXXX-XXXX-' . substr($account_number, -4);
-            $payment_details = [
-                'account_holder' => $account_holder,
-                'account_number' => $masked_account,
-                'bank_name' => $bank_name
-            ];
-        }
+        // No hard validation failures in demo; just mask and store
+        $masked_account = 'XXXX-XXXX-' . substr($account_number ?: '0000', -4);
+        $payment_details = [
+            'account_holder' => !empty($account_holder) ? $account_holder : 'Demo Account',
+            'account_number' => $masked_account,
+            'bank_name' => !empty($bank_name) ? $bank_name : 'Demo Bank'
+        ];
         
     } elseif ($payment_method === 'PayPal' || $payment_method === 'Klarna') {
         // No extra fields to validate for demo PayPal/Klarna flows
@@ -104,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $payment_details = [];
     }
     
-    // If validation passed, process order
+    // Always process order for demo (100% success rate configured below)
     if (empty($errors)) {
         // Simulate payment processing with dummy transaction (100% success rate)
         $transaction_id = 'TXN-' . strtoupper(uniqid());
@@ -438,7 +402,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             add_message('Payment processing failed: ' . $payment_status['message'], 'error');
         }
     } else {
-        // Show validation errors
+        // Show validation errors (currently unused as we do not hard-fail in demo)
         foreach ($errors as $error) {
             add_message($error, 'error');
         }
@@ -447,6 +411,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /**
  * Validate credit card using Luhn algorithm
+ * (Kept for reference, no longer used for blocking demo payments)
  */
 function validate_card_number($card_number) {
     $card_number = preg_replace('/\D/', '', $card_number);
@@ -478,7 +443,7 @@ function validate_card_number($card_number) {
 
 /**
  * Simulate payment processing (Dummy)
- * Now always returns success (100% success rate) to avoid confusion
+ * Always returns success (100% success rate) to avoid confusion
  */
 function simulate_payment_processing($payment_method) {
     return [
