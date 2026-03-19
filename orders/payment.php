@@ -159,10 +159,10 @@ function validate_card_number($card_number) {
     return ($sum % 10 === 0);
 }
 
-/**
+/*
  * Simulate payment processing (Dummy)
  * Returns success/failure randomly for realistic experience
- */
+ 
 function simulate_payment_processing($payment_method) {
     // Simulate 95% success rate for demonstration
     $random = mt_rand(1, 100);
@@ -188,6 +188,18 @@ function simulate_payment_processing($payment_method) {
             'status' => 'Failed'
         ];
     }
+} */
+
+/**
+ * Simulate payment processing (Dummy)
+ * Now always returns success (100% success rate) to avoid confusion
+ */
+function simulate_payment_processing($payment_method) {
+    return [
+        'success' => true,
+        'message' => 'Payment processed successfully',
+        'status'  => 'Completed'
+    ];
 }
 
 ?>
