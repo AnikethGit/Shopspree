@@ -231,18 +231,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         shipping_postal_code, 
                                         total_amount, 
                                         payment_method, 
-                                        payment_status,
                                         transaction_id,
                                         payment_details,
                                         order_status, 
                                         notes, 
                                         created_at
                                     ) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
                     
                     if ($order_stmt = $conn->prepare($order_query)) {
                         $payment_details_json = json_encode($payment_details);
-                        $payment_status_val = 'Completed';
                         
                         $bind_result = $order_stmt->bind_param(
                             "sissssssdsssss",
@@ -256,7 +254,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $checkout_data['postal_code'],
                             $totals['total'],
                             $payment_method,
-                            $payment_status_val,
                             $transaction_id,
                             $payment_details_json,
                             $order_status,
@@ -281,21 +278,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         shipping_postal_code, 
                                         total_amount, 
                                         payment_method, 
-                                        payment_status,
                                         transaction_id,
                                         payment_details,
                                         order_status, 
                                         notes, 
                                         created_at
                                     ) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
                     
                     if ($order_stmt = $conn->prepare($order_query)) {
                         $payment_details_json = json_encode($payment_details);
-                        $payment_status_val = 'Completed';
                         
                         $bind_result = $order_stmt->bind_param(
-                            "sssssssdssss",
+                            "sssssssdsssss",
                             $order_id,
                             $checkout_data['email'],
                             $checkout_data['phone'],
@@ -305,7 +300,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $checkout_data['postal_code'],
                             $totals['total'],
                             $payment_method,
-                            $payment_status_val,
                             $transaction_id,
                             $payment_details_json,
                             $order_status,
