@@ -455,7 +455,8 @@ function simulate_payment_processing($payment_method) {
                         <span><strong>Secure Payment:</strong> Your payment information is encrypted and secure. This is a demo payment system.</span>
                     </div>
 
-                    <form method="post" action="payment.php" id="paymentForm" onsubmit="handlePaymentSubmit(event)">
+                    <form method="post" action="payment.php" id="paymentForm">
+
                         <!-- Credit Card Payment -->
                         <?php if ($payment_method === 'Credit Card'): ?>
                             <h5 class="mb-4">Credit/Debit Card Details</h5>
@@ -727,7 +728,7 @@ function simulate_payment_processing($payment_method) {
             document.getElementById('accountPreview').textContent = masked;
         });
 
-        // Handle payment form submission
+        /* // Handle payment form submission
         function handlePaymentSubmit(event) {
             event.preventDefault();
             
@@ -739,8 +740,15 @@ function simulate_payment_processing($payment_method) {
             setTimeout(() => {
                 document.getElementById('paymentForm').submit();
             }, 2500);
-        }
+        } */
 
+        // Handle payment form submission
+function showProcessing() {
+    document.getElementById('paymentForm').style.display = 'none';
+    document.getElementById('paymentProcessing').style.display = 'block';
+    return true;  // Allow form to submit
+}
+            
         // Remove spinner on page load
         window.addEventListener('load', function() {
             document.getElementById('spinner').classList.remove('show');
