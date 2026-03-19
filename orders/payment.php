@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // If validation passed, process order
     if (empty($errors)) {
-        // Simulate payment processing with dummy transaction
+        // Simulate payment processing with dummy transaction (100% success rate)
         $transaction_id = 'TXN-' . strtoupper(uniqid());
         $payment_status = simulate_payment_processing($payment_method);
         
@@ -117,10 +117,324 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['transaction_id'] = $transaction_id;
             $_SESSION['payment_status'] = 'Completed';
             
-            // Redirect to create order
-            redirect('create.php');
+            // Proceed to process the order immediately
+            // Inline cart functions for order processing
+            function is_cart_empty() {
+                if (!isset($_SESSION['cart'])) {
+                    return true;
+                }
+                return !is_array($_SESSION['cart']) || count($_SESSION['cart']) === 0;
+            }
+
+            function get_cart_items_inline() {
+                global $conn;
+                
+                if (!isset($_SESSION['cart'])) {
+                    return [];
+                }
+                
+                if (!is_array($_SESSION['cart']) || count($_SESSION['cart']) === 0) {
+                    return [];
+                }
+                
+                $cart_items = [];
+                
+                foreach ($_SESSION['cart'] as $product_id => $quantity) {
+                    $product_id = intval($product_id);
+                    $quantity = intval($quantity);
+                    
+                    if ($quantity <= 0 || $product_id <= 0) {
+                        continue;
+                    }
+                    
+                    $query = "SELECT id, name, price FROM products WHERE id = ?";
+                    
+                    if ($stmt = $conn->prepare($query)) {
+                        $stmt->bind_param("i", $product_id);
+                        
+                        if ($stmt->execute()) {
+                            $result = $stmt->get_result();
+                            
+                            if ($result && $result->num_rows > 0) {
+                                $product = $result->fetch_assoc();
+                                
+                                $cart_items[] = [
+                                    'id' => intval($product['id']),
+                                    'product_id' => intval($product['id']),
+                                    'name' => htmlspecialchars($product['name']),
+                                    'price' => floatval($product['price']),
+                                    'quantity' => $quantity
+                                ];
+                            }
+                        }
+                        
+                        $stmt->close();
+                    }
+                }
+                
+                return $cart_items;
+            }
+
+            function calculate_cart_totals_inline($cart_items, $tax_rate = 0.08, $shipping = 50) {
+                $subtotal = 0.0;
+                
+                if (is_array($cart_items)) {
+                    foreach ($cart_items as $item) {
+                        $price = isset($item['price']) ? floatval($item['price']) : 0;
+                        $qty = isset($item['quantity']) ? intval($item['quantity']) : 0;
+                        $subtotal += ($price * $qty);
+                    }
+                }
+                
+                $subtotal = round($subtotal, 2);
+
+                // Apply shipping only for orders under $200
+                $effective_shipping = ($subtotal > 0 && $subtotal < 200) ? floatval($shipping) : 0.0;
+
+                $tax = round($subtotal * floatval($tax_rate), 2);
+                $total = round($subtotal + $tax + $effective_shipping, 2);
+                
+                return [
+                    'subtotal' => $subtotal,
+                    'tax' => $tax,
+                    'tax_rate' => floatval($tax_rate) * 100,
+                    'shipping' => $effective_shipping,
+                    'total' => $total,
+                    'item_count' => count($cart_items)
+                ];
+            }
+
+            try {
+                // Check if cart is empty
+                if (is_cart_empty()) {
+                    add_message('Your cart is empty', 'error');
+                    redirect('../cart.php');
+                }
+
+                // Get cart data
+                $cart_items = get_cart_items_inline();
+                $totals = calculate_cart_totals_inline($cart_items, 0.08, 50);
+
+                if (empty($cart_items)) {
+                    add_message('Your cart is empty or products not found', 'error');
+                    redirect('../cart.php');
+                }
+
+                // Validate stock
+                foreach ($cart_items as $item) {
+                    $item_id = intval($item['id']);
+                    $qty = intval($item['quantity']);
+                    
+                    $stock_query = "SELECT quantity FROM products WHERE id = ?";
+                    if ($stmt = $conn->prepare($stock_query)) {
+                        $stmt->bind_param("i", $item_id);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        
+                        if ($result && $result->num_rows > 0) {
+                            $product = $result->fetch_assoc();
+                            if (intval($product['quantity']) < $qty) {
+                                throw new Exception('Product ' . htmlspecialchars($item['name']) . ' is out of stock');
+                            }
+                        } else {
+                            throw new Exception('Product not found');
+                        }
+                        $stmt->close();
+                    }
+                }
+
+                // Create order
+                $order_id = 'ORD-' . strtoupper(uniqid());
+                $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
+                
+                $shipping_address = $checkout_data['address'] . ', ' . $checkout_data['city'] . ', ' . $checkout_data['state'];
+                $notes = isset($checkout_data['notes']) ? sanitize($checkout_data['notes']) : '';
+                
+                // Determine order status based on payment method
+                $order_status = ($payment_method === 'COD') ? 'Pending' : 'Payment Received';
+                
+                // Prepare order insert query
+                if ($user_id !== null) {
+                    // User logged in - include user_id
+                    $order_query = "INSERT INTO orders (
+                                        order_id, 
+                                        user_id, 
+                                        email, 
+                                        phone, 
+                                        shipping_address, 
+                                        shipping_city, 
+                                        shipping_state, 
+                                        shipping_postal_code, 
+                                        total_amount, 
+                                        payment_method, 
+                                        payment_status,
+                                        transaction_id,
+                                        payment_details,
+                                        order_status, 
+                                        notes, 
+                                        created_at
+                                    ) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                    
+                    if ($order_stmt = $conn->prepare($order_query)) {
+                        $payment_details_json = json_encode($payment_details);
+                        $payment_status_val = 'Completed';
+                        
+                        $bind_result = $order_stmt->bind_param(
+                            "sissssssdsssss",
+                            $order_id,
+                            $user_id,
+                            $checkout_data['email'],
+                            $checkout_data['phone'],
+                            $shipping_address,
+                            $checkout_data['city'],
+                            $checkout_data['state'],
+                            $checkout_data['postal_code'],
+                            $totals['total'],
+                            $payment_method,
+                            $payment_status_val,
+                            $transaction_id,
+                            $payment_details_json,
+                            $order_status,
+                            $notes
+                        );
+                        
+                        if (!$bind_result) {
+                            throw new Exception("bind_param failed (logged-in user): " . $order_stmt->error);
+                        }
+                    } else {
+                        throw new Exception("prepare failed: " . $conn->error);
+                    }
+                } else {
+                    // Guest checkout - no user_id
+                    $order_query = "INSERT INTO orders (
+                                        order_id, 
+                                        email, 
+                                        phone, 
+                                        shipping_address, 
+                                        shipping_city, 
+                                        shipping_state, 
+                                        shipping_postal_code, 
+                                        total_amount, 
+                                        payment_method, 
+                                        payment_status,
+                                        transaction_id,
+                                        payment_details,
+                                        order_status, 
+                                        notes, 
+                                        created_at
+                                    ) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                    
+                    if ($order_stmt = $conn->prepare($order_query)) {
+                        $payment_details_json = json_encode($payment_details);
+                        $payment_status_val = 'Completed';
+                        
+                        $bind_result = $order_stmt->bind_param(
+                            "sssssssdssss",
+                            $order_id,
+                            $checkout_data['email'],
+                            $checkout_data['phone'],
+                            $shipping_address,
+                            $checkout_data['city'],
+                            $checkout_data['state'],
+                            $checkout_data['postal_code'],
+                            $totals['total'],
+                            $payment_method,
+                            $payment_status_val,
+                            $transaction_id,
+                            $payment_details_json,
+                            $order_status,
+                            $notes
+                        );
+                        
+                        if (!$bind_result) {
+                            throw new Exception("bind_param failed (guest): " . $order_stmt->error);
+                        }
+                    } else {
+                        throw new Exception("prepare failed: " . $conn->error);
+                    }
+                }
+                
+                // Execute the order insert
+                if ($order_stmt->execute()) {
+                    $order_db_id = $conn->insert_id;
+                    $order_stmt->close();
+                    
+                    // Add items to order_items
+                    $item_query = "INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal) 
+                                  VALUES (?, ?, ?, ?, ?, ?)";
+                    
+                    foreach ($cart_items as $item) {
+                        $subtotal = floatval($item['price']) * intval($item['quantity']);
+                        $item_id = intval($item['id']);
+                        $item_qty = intval($item['quantity']);
+                        $item_price = floatval($item['price']);
+                        
+                        if ($item_stmt = $conn->prepare($item_query)) {
+                            $item_bind = $item_stmt->bind_param(
+                                "iisidd",
+                                $order_db_id,
+                                $item_id,
+                                $item['name'],
+                                $item_qty,
+                                $item_price,
+                                $subtotal
+                            );
+                            
+                            if (!$item_bind) {
+                                error_log("Item bind_param error: " . $item_stmt->error);
+                                continue;
+                            }
+                            
+                            if ($item_stmt->execute()) {
+                                // Update product stock
+                                $stock_update = "UPDATE products SET quantity = quantity - ? WHERE id = ?";
+                                if ($stock_stmt = $conn->prepare($stock_update)) {
+                                    $stock_stmt->bind_param("ii", $item_qty, $item_id);
+                                    $stock_stmt->execute();
+                                    $stock_stmt->close();
+                                }
+                            } else {
+                                error_log("Error inserting order item: " . $item_stmt->error);
+                            }
+                            $item_stmt->close();
+                        }
+                    }
+                    
+                    // Clear session data
+                    $_SESSION['cart'] = [];
+                    unset($_SESSION['checkout_data']);
+                    unset($_SESSION['payment_processed']);
+                    unset($_SESSION['payment_details']);
+                    unset($_SESSION['transaction_id']);
+                    unset($_SESSION['payment_status']);
+                    
+                    // Set session variables for thank you page
+                    $_SESSION['last_order_id'] = $order_id;
+                    $_SESSION['last_order_db_id'] = $order_db_id;
+                    
+                    // Redirect to thank you page after successful order creation
+                    header('Location: thank_you.php');
+                    exit();
+                } else {
+                    error_log("Order execution failed: " . $order_stmt->error);
+                    throw new Exception('Error creating order. Please try again.');
+                }
+
+            } catch (Exception $e) {
+                error_log("Exception in order creation: " . $e->getMessage());
+                add_message('Error processing order: ' . htmlspecialchars($e->getMessage()), 'error');
+                
+                // Clear payment session on error
+                unset($_SESSION['payment_processed']);
+                unset($_SESSION['payment_details']);
+                unset($_SESSION['transaction_id']);
+                
+                redirect('../checkout.php');
+            }
         } else {
-            // Dummy payment failed
+            // Dummy payment failed (should never happen with 100% success rate)
             add_message('Payment processing failed: ' . $payment_status['message'], 'error');
         }
     } else {
@@ -161,37 +475,6 @@ function validate_card_number($card_number) {
     
     return ($sum % 10 === 0);
 }
-
-/*
- * Simulate payment processing (Dummy)
- * Returns success/failure randomly for realistic experience
- 
-function simulate_payment_processing($payment_method) {
-    // Simulate 95% success rate for demonstration
-    $random = mt_rand(1, 100);
-    
-    if ($random <= 95) {
-        return [
-            'success' => true,
-            'message' => 'Payment processed successfully',
-            'status' => 'Completed'
-        ];
-    } else {
-        // Simulate occasional failures
-        $failure_reasons = [
-            'Insufficient funds',
-            'Card declined',
-            'Invalid security code',
-            'Transaction timeout'
-        ];
-        
-        return [
-            'success' => false,
-            'message' => $failure_reasons[array_rand($failure_reasons)],
-            'status' => 'Failed'
-        ];
-    }
-} */
 
 /**
  * Simulate payment processing (Dummy)
@@ -351,11 +634,16 @@ function simulate_payment_processing($payment_method) {
         .payment-processing {
             text-align: center;
             padding: 40px;
+            display: none;
         }
         
         .spinner-border-lg {
             width: 3rem;
             height: 3rem;
+        }
+        
+        #paymentForm.hidden {
+            display: none;
         }
     </style>
 </head>
@@ -455,7 +743,21 @@ function simulate_payment_processing($payment_method) {
                         <span><strong>Secure Payment:</strong> Your payment information is encrypted and secure. This is a demo payment system.</span>
                     </div>
 
-                    <form method="post" action="payment.php" id="paymentForm" onsubmit="showProcessing(); return true;">
+                    <!-- Payment Processing Overlay -->
+                    <div class="payment-processing" id="paymentProcessing">
+                        <div class="spinner-border spinner-border-lg text-primary mb-3" role="status">
+                            <span class="sr-only">Processing...</span>
+                        </div>
+                        <h5><strong>Processing Your Payment...</strong></h5>
+                        <p class="text-muted mt-2">Please wait, do not refresh this page</p>
+                        <div class="mt-4">
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" action="payment.php" id="paymentForm" onsubmit="return handlePaymentSubmit(event);">
 
                         <!-- Credit Card Payment -->
                         <?php if ($payment_method === 'Credit Card'): ?>
@@ -619,15 +921,6 @@ function simulate_payment_processing($payment_method) {
                                 <i class="fas fa-lock me-2"></i>Process Payment - $<?php echo number_format($total_amount, 2); ?>
                             </button>
                         </div>
-
-                        <!-- Loading Indicator -->
-                        <div class="payment-processing" id="paymentProcessing" style="display: none;">
-                            <div class="spinner-border spinner-border-lg text-primary mb-3" role="status">
-                                <span class="sr-only">Processing...</span>
-                            </div>
-                            <p><strong>Processing your payment...</strong></p>
-                            <p class="text-muted small">Please wait, do not refresh this page</p>
-                        </div>
                     </form>
 
                     <a href="../checkout.php" class="btn btn-outline-secondary rounded-pill px-4 py-3 text-uppercase w-100 mt-3">
@@ -728,26 +1021,23 @@ function simulate_payment_processing($payment_method) {
             document.getElementById('accountPreview').textContent = masked;
         });
 
-        /* // Handle payment form submission
+        // Handle payment form submission
         function handlePaymentSubmit(event) {
             event.preventDefault();
             
-            // Show processing spinner
+            // Hide form and show processing
             document.getElementById('paymentForm').style.display = 'none';
             document.getElementById('paymentProcessing').style.display = 'block';
             
-            // Simulate payment processing (2-3 seconds)
+            // Simulate payment processing delay (3 seconds) before submitting
             setTimeout(() => {
-                document.getElementById('paymentForm').submit();
-            }, 2500);
-        } */
-
-        // Handle payment form submission
-function showProcessing() {
-    document.getElementById('paymentForm').style.display = 'none';
-    document.getElementById('paymentProcessing').style.display = 'block';
-    return true;  // Allow form to submit
-}
+                // Now submit the form after showing the processing screen
+                document.getElementById('paymentForm').style.display = 'none';
+                document.forms[document.forms.length - 1].submit();
+            }, 3000);
+            
+            return false;  // Prevent immediate form submission
+        }
             
         // Remove spinner on page load
         window.addEventListener('load', function() {
