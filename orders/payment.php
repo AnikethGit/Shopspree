@@ -96,6 +96,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
         }
         
+    } elseif ($payment_method === 'PayPal' || $payment_method === 'Klarna') {
+        // No extra fields to validate for demo PayPal/Klarna flows
+        $payment_details = [];
     } elseif ($payment_method === 'COD') {
         // COD doesn't need payment details
         $payment_details = [];
@@ -523,7 +526,7 @@ function simulate_payment_processing($payment_method) {
                                 </div>
                             </div>
 
-                        <!-- Bank Transfer Payment -->
+                        <!-- Bank Transfer Payment (legacy/demo) -->
                         <?php elseif ($payment_method === 'Bank Transfer'): ?>
                             <h5 class="mb-4">Bank Transfer Details</h5>
                             
@@ -568,6 +571,26 @@ function simulate_payment_processing($payment_method) {
                                     </div>
                                 </div>
                             </div>
+
+                        <!-- PayPal Payment -->
+                        <?php elseif ($payment_method === 'PayPal'): ?>
+                            <h5 class="mb-4">Pay with PayPal</h5>
+                            
+                            <div class="alert alert-info" role="alert">
+                                <i class="fab fa-paypal me-2"></i>
+                                You will be redirected to PayPal to securely complete your payment. For demo purposes, clicking "Process Payment" will simulate a successful PayPal transaction.
+                            </div>
+                            <p class="text-muted">On a real store, you would log into your PayPal account and approve the payment before returning here.</p>
+
+                        <!-- Klarna Payment -->
+                        <?php elseif ($payment_method === 'Klarna'): ?>
+                            <h5 class="mb-4">Pay with Klarna</h5>
+                            
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Split your purchase into flexible installments with Klarna. This demo flow simulates a real Klarna authorization.
+                            </div>
+                            <p class="text-muted">On a real store, you would review your Klarna plan, confirm your details and then authorize the payment.</p>
 
                         <!-- Cash on Delivery -->
                         <?php else: ?>
@@ -640,11 +663,12 @@ function simulate_payment_processing($payment_method) {
                     <div class="alert alert-info" role="alert">
                         <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Demo Payment Info</h6>
                         <small>
-                            <p class="mb-2"><strong>Test Card Numbers:</strong></p>
+                            <p class="mb-2"><strong>Test Card Numbers (for Credit/Debit Card):</strong></p>
                             <p class="mb-2">✓ 4532015112830366 (Success)</p>
                             <p class="mb-2">✓ 5425233010103442 (Success)</p>
                             <p class="mb-2">✓ 378282246310005 (Success)</p>
-                            <p class="mb-0">Use any expiry date in the future and any 3-digit CVV</p>
+                            <p class="mb-2">Use any expiry date in the future and any 3-digit CVV</p>
+                            <p class="mb-0 mt-2"><strong>PayPal & Klarna:</strong> These options are fully simulated – no real accounts are needed.</p>
                         </small>
                     </div>
                 </div>

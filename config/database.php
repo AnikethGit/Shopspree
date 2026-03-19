@@ -6,9 +6,9 @@
 
 // Database credentials
 define('DB_HOST', 'localhost');              // Usually 'localhost' on Hostinger
-define('DB_USER', 'u701659873_dist_user');       // Your database username
-define('DB_PASS', 'bAAbA@35');       // Your database password
-define('DB_NAME', 'u701659873_distributor');  // Your database name
+define('DB_USER', '');       // Your database username
+define('DB_PASS', '');       // Your database password
+define('DB_NAME', '');  // Your database name
 
 // Create connection
 $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);

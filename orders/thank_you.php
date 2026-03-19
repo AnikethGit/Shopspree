@@ -7,7 +7,7 @@ require_once __DIR__ . '/../config/helpers.php';
 
 // Check if there's a recent order
 if (empty($_SESSION['last_order_id'])) {
-    redirect('index.php');
+    redirect('../index.php');
 }
 
 $order_id = $_SESSION['last_order_id'];
@@ -61,7 +61,7 @@ if ($stmt = $conn->prepare($items_query)) {
     $stmt->close();
 }
 
-// Clear session data
+// Clear session data so page cannot be reloaded to show old order
 unset($_SESSION['last_order_id']);
 unset($_SESSION['last_order_db_id']);
 
@@ -178,6 +178,7 @@ unset($_SESSION['last_order_db_id']);
         }
         .action-buttons {
             display: flex;
+            flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
             margin-top: 30px;
@@ -224,6 +225,7 @@ unset($_SESSION['last_order_db_id']);
             margin: 20px 0;
             border-radius: 4px;
             color: #1565c0;
+            text-align: left;
         }
     </style>
 </head>
@@ -308,9 +310,9 @@ unset($_SESSION['last_order_db_id']);
                 Total Amount: <strong>$<?php echo number_format((float)$order['total_amount'], 2); ?></strong>
             </div>
 
-            <!-- Note -->
+            <!-- Notes -->
             <div class="note">
-                <strong>📧 Confirmation Email:</strong> A confirmation email has been sent to <strong><?php echo htmlspecialchars($order['email']); ?></strong>. Please check your inbox and spam folder.
+                <strong>📦 Order Confirmed:</strong> Your order is confirmed in our system. You can use the Order ID above or the "Track My Order" button below to check the latest status at any time.
             </div>
 
             <?php if ($order['payment_method'] === 'COD'): ?>
@@ -321,6 +323,7 @@ unset($_SESSION['last_order_db_id']);
 
             <!-- Action Buttons -->
             <div class="action-buttons">
+                <a href="track.php?order_id=<?php echo urlencode($order['order_id']); ?>" class="btn btn-primary">Track My Order</a>
                 <a href="../shop.php" class="btn btn-primary">Continue Shopping</a>
                 <a href="../index.php" class="btn btn-secondary">Back to Home</a>
             </div>
