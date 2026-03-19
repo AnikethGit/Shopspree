@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $payment_status = simulate_payment_processing($payment_method);
         
         if ($payment_status['success']) {
-            // Store payment info in session for order creation
+            // Store payment info in session for order creation (for display / debugging only)
             $_SESSION['payment_processed'] = true;
             $_SESSION['payment_details'] = $payment_details;
             $_SESSION['transaction_id'] = $transaction_id;
@@ -217,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Determine order status based on payment method
                 $order_status = ($payment_method === 'COD') ? 'Pending' : 'Payment Received';
                 
-                // Prepare order insert query
+                // Prepare order insert query (aligned with current DB schema: no payment_status, transaction_id, or payment_details columns)
                 if ($user_id !== null) {
                     // User logged in - include user_id
                     $order_query = "INSERT INTO orders (
@@ -230,19 +230,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         shipping_state, 
                                         shipping_postal_code, 
                                         total_amount, 
-                                        payment_method, 
-                                        payment_details,
+                                        payment_method,
                                         order_status, 
                                         notes, 
                                         created_at
                                     ) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
                     
                     if ($order_stmt = $conn->prepare($order_query)) {
-                        $payment_details_json = json_encode($payment_details);
-                        
                         $bind_result = $order_stmt->bind_param(
-                            "sissssssdssss",
+                            "sissssssdsss",
                             $order_id,
                             $user_id,
                             $checkout_data['email'],
@@ -253,7 +250,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $checkout_data['postal_code'],
                             $totals['total'],
                             $payment_method,
-                            $payment_details_json,
                             $order_status,
                             $notes
                         );
@@ -276,18 +272,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         shipping_postal_code, 
                                         total_amount, 
                                         payment_method, 
-                                        payment_details,
                                         order_status, 
                                         notes, 
                                         created_at
                                     ) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
                     
                     if ($order_stmt = $conn->prepare($order_query)) {
-                        $payment_details_json = json_encode($payment_details);
-                        
                         $bind_result = $order_stmt->bind_param(
-                            "sssssssdssss",
+                            "sssssssdsss",
                             $order_id,
                             $checkout_data['email'],
                             $checkout_data['phone'],
@@ -297,7 +290,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $checkout_data['postal_code'],
                             $totals['total'],
                             $payment_method,
-                            $payment_details_json,
                             $order_status,
                             $notes
                         );
