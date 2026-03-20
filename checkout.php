@@ -171,7 +171,7 @@ try {
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
                     <a href="#" class="text-muted me-2"> Help</a><small> / </small>
                     <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
-                    <a href="#" class="text-muted ms-2"> Contact</a>
+                    <a href="contact.php" class="text-muted ms-2"> Contact</a>
                 </div>
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
@@ -235,6 +235,7 @@ try {
                             <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
                             <a href="cart.php" class="nav-item nav-link">Cart</a>
                             <a href="checkout.php" class="nav-item nav-link active">Checkout</a>
+                            <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
                 </nav>
