@@ -234,7 +234,7 @@ if (is_array($_SESSION['cart'])) {
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
                     <a href="#" class="text-muted me-2"> Help</a><small> / </small>
                     <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
-                    <a href="#" class="text-muted ms-2"> Contact</a>
+                    <a href="contact.php" class="text-muted ms-2"> Contact</a>
                 </div>
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
@@ -410,32 +410,32 @@ if (is_array($_SESSION['cart'])) {
                             <img src="img/carousel-1.png" class="img-fluid w-100" alt="Image">
                         </div>
                         <div class="col-xl-6 carousel-content p-4">
-                            <h4 class="text-uppercase fw-bold mb-4 wow fadeInRight" data-wow-delay="0.1s"
+                            <h4 class="text-uppercase fw-bold mb-4 wow FadeInRight" data-wow-delay="0.1s"
                                 style="letter-spacing: 3px;">Save Up To A $400</h4>
-                            <h1 class="display-3 text-capitalize mb-4 wow fadeInRight" data-wow-delay="0.3s">On Selected
+                            <h1 class="display-3 text-capitalize mb-4 wow FadeInRight" data-wow-delay="0.3s">On Selected
                                 Laptops &amp; Desktop Or Smartphone</h1>
-                            <p class="text-dark wow fadeInRight" data-wow-delay="0.5s">Terms and Condition Apply</p>
-                            <a class="btn btn-primary rounded-pill py-3 px-5 wow fadeInRight" data-wow-delay="0.7s"
+                            <p class="text-dark wow FadeInRight" data-wow-delay="0.5s">Terms and Condition Apply</p>
+                            <a class="btn btn-primary rounded-pill py-3 px-5 wow FadeInRight" data-wow-delay="0.7s"
                                 href="shop.php">Shop Now</a>
                         </div>
                     </div>
                     <div class="row g-0 header-carousel-item align-items-center">
-                        <div class="col-xl-6 carousel-img wow fadeInLeft" data-wow-delay="0.1s">
+                        <div class="col-xl-6 carousel-img wow FadeInLeft" data-wow-delay="0.1s">
                             <img src="img/carousel-2.png" class="img-fluid w-100" alt="Image">
                         </div>
                         <div class="col-xl-6 carousel-content p-4">
                             <h4 class="text-uppercase fw-bold mb-4 wow FadeInRight" data-wow-delay="0.1s"
                                 style="letter-spacing: 3px;">Save Up To A $200</h4>
-                            <h1 class="display-3 text-capitalize mb-4 wow fadeInRight" data-wow-delay="0.3s">On Selected
+                            <h1 class="display-3 text-capitalize mb-4 wow FadeInRight" data-wow-delay="0.3s">On Selected
                                 Laptops &amp; Desktop Or Smartphone</h1>
-                            <p class="text-dark wow fadeInRight" data-wow-delay="0.5s">Terms and Condition Apply</p>
-                            <a class="btn btn-primary rounded-pill py-3 px-5 wow fadeInRight" data-wow-delay="0.7s"
+                            <p class="text-dark wow FadeInRight" data-wow-delay="0.5s">Terms and Condition Apply</p>
+                            <a class="btn btn-primary rounded-pill py-3 px-5 wow FadeInRight" data-wow-delay="0.7s"
                                 href="shop.php">Shop Now</a>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-lg-5 col-xl-3 wow fadeInRight" data-wow-delay="0.1s">
+            <div class="col-12 col-lg-5 col-xl-3 wow FadeInRight" data-wow-delay="0.1s">
                 <div class="carousel-header-banner h-100">
                     <img src="img/header-img.jpg" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Image">
                     <div class="carousel-banner-offer">
@@ -918,7 +918,7 @@ if (is_array($_SESSION['cart'])) {
                 <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
                     <h5 class="text-light mb-4">Quick Links</h5>
                     <a class="btn btn-link" href="">About Us</a>
-                    <a class="btn btn-link" href="">Contact Us</a>
+                    <a class="btn btn-link" href="contact.php">Contact Us</a>
                     <a class="btn btn-link" href="">Our Services</a>
                     <a class="btn btn-link" href="">Terms &amp; Condition</a>
                     <a class="btn btn-link" href="">Support</a>
