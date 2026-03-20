@@ -86,7 +86,7 @@ if (is_array($_SESSION['cart'])) {
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
                     <a href="#" class="text-muted me-2"> Help</a><small> / </small>
                     <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
-                    <a href="#" class="text-muted ms-2"> Contact</a>
+                    <a href="contact.php" class="text-muted ms-2"> Contact</a>
                 </div>
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
@@ -178,6 +178,7 @@ if (is_array($_SESSION['cart'])) {
                             <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
                             <a href="cart.php" class="nav-item nav-link">Cart</a>
                             <a href="checkout.php" class="nav-item nav-link">Checkout</a>
+                            <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                         <a href="#" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i class="fa fa-mobile-alt me-2"></i> +0123 456 7890</a>
                     </div>
@@ -411,7 +412,7 @@ if (is_array($_SESSION['cart'])) {
                         <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="" onerror="this.style.display='none'">
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
                     <h5 class="text-light mb-4">Address</h5>
                     <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
                     <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
@@ -423,15 +424,15 @@ if (is_array($_SESSION['cart'])) {
                         <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow fadeInUp" data-wow-delay="0.5s">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
                     <h5 class="text-light mb-4">Quick Links</h5>
                     <a class="btn btn-link" href="index.php">Home</a>
                     <a class="btn btn-link" href="shop.php">Shop</a>
                     <a class="btn btn-link" href="cart.php">Cart</a>
                     <a class="btn btn-link" href="checkout.php">Checkout</a>
-                    <a class="btn btn-link" href="">Support</a>
+                    <a class="btn btn-link" href="contact.php">Support</a>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow fadeInUp" data-wow-delay="0.7s">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
                     <h5 class="text-light mb-4">Newsletter</h5>
                     <p>Subscribe to get special offers and updates</p>
                     <div class="position-relative w-100 mt-3">
