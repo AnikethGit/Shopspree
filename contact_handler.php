@@ -119,10 +119,10 @@ try {
     $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
     
     // Send email to admin (suppress errors)
-    @mail($admin_email, $subject, $email_body, $headers);
+    /* @mail($admin_email, $subject, $email_body, $headers); */
     
     // Send confirmation email to user
-    $user_subject = 'We received your message - Electro';
+    /* $user_subject = 'We received your message - Electro';
     $user_body = "Hi " . $data['name'] . ",\n\n";
     $user_body .= "Thank you for contacting Electro. We have received your message and will get back to you as soon as possible.\n\n";
     $user_body .= "Your message:\n";
@@ -133,7 +133,7 @@ try {
     $user_headers = "From: " . $admin_email . "\r\n";
     $user_headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
     
-    @mail($data['email'], $user_subject, $user_body, $user_headers);
+    @mail($data['email'], $user_subject, $user_body, $user_headers); */
     
     // Send response
     if ($is_ajax) {

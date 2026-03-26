@@ -5,9 +5,9 @@
  */
 
 // Site Configuration
-define('SITE_NAME', 'Shopspree');
-define('SITE_URL', 'https://sadgurubharadwaja.org/ecommerce/');  // Change in production
-define('SITE_EMAIL', 'admin@shopspree.com');
+define('SITE_NAME', 'PrintDepotCo');
+define('SITE_URL', 'https://printdepotco.com/');  // Change in production
+define('SITE_EMAIL', 'noreply@printdepotco.com');
 define('SITE_PHONE', '+1-234-567-8900');
 
 // Currency
@@ -20,22 +20,22 @@ define('ITEMS_PER_PAGE', 12);
 // File Upload Settings
 define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-define('UPLOAD_DIR', $_SERVER['DOCUMENT_ROOT'] . '/ecommerce/img/uploads/');
+define('UPLOAD_DIR', $_SERVER['DOCUMENT_ROOT'] . '/img/uploads/');
 
 // Email Configuration (Using PHP mail())
-define('MAIL_FROM', 'noreply@shopspree.com');
-define('MAIL_FROM_NAME', 'Shopspree');
+define('MAIL_FROM', 'noreply@printdepotco.com');
+define('MAIL_FROM_NAME', 'PrintDepotCo');
 
 // Admin Settings
-define('ADMIN_EMAIL', 'admin@shopspree.com');
+define('ADMIN_EMAIL', 'admin@printdepotco.com');
 
 // Shipping Cost
 define('STANDARD_SHIPPING', 10.00);
 define('EXPRESS_SHIPPING', 20.00);
 define('FREE_SHIPPING_THRESHOLD', 100.00);
 
-// Tax Rate (10%)
-define('TAX_RATE', 0.10);
+// Tax Rate (6%)
+define('TAX_RATE', 0.06);
 
 // Session Configuration
 ini_set('session.cookie_httponly', 1);

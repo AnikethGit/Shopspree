@@ -4,7 +4,8 @@
  * Processes manual invoice form and generates downloadable PDF
  * Creates database entries identical to online orders
  */
-
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
 
@@ -61,17 +62,43 @@ try {
     $pdo->beginTransaction();
     
     // Generate unique order ID
-    $order_id = generate_order_id();
+    // $order_id = generate_order_id();
+    
+    // Decide order ID: manual (if provided) or auto-generated
+    $order_id_mode   = $_POST['order_id_mode']   ?? 'auto';
+    $manual_order_id = trim($_POST['manual_order_id'] ?? '');
+    
+    if ($order_id_mode === 'manual' && $manual_order_id !== '') {
+        // Ensure uniqueness in DB
+        $checkStmt = $pdo->prepare("SELECT id FROM orders WHERE order_id = ? LIMIT 1");
+        $checkStmt->execute([$manual_order_id]);
+        if ($checkStmt->fetch()) {
+            throw new Exception('Order ID "' . $manual_order_id . '" already exists. Please choose a different one.');
+        }
+        
+        $order_id = $manual_order_id;
+    } else {
+        // Fallback to existing generator
+        $order_id = generate_order_id();
+}
     
     // Create full shipping address
     $full_address = $shipping_address . ', ' . $shipping_city . ', ' . $shipping_state;
     
     // Insert order
+    $card_last4 = null;
+    if (in_array($payment_method, ['Credit Card', 'Debit Card']) && !empty($_POST['card_last4'])) {
+        $card_last4 = substr(trim($_POST['card_last4']), 0, 4); // Ensure exactly 4 digits
+        if (!preg_match('/^[0-9]{4}$/', $card_last4)) {
+            throw new Exception('Card last 4 digits must be exactly 4 numbers.');
+        }
+    }
+    
     $stmt = $pdo->prepare(
         "INSERT INTO orders (order_id, email, phone, shipping_address, shipping_city, 
-         shipping_state, shipping_postal_code, shipping_country, total_amount, payment_method, 
-         order_status, notes, created_at) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Offline', ?, NOW())"
+        shipping_state, shipping_postal_code, shipping_country, total_amount, payment_method, 
+        card_last4, order_status, notes, created_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Offline', ?, NOW())"
     );
     
     $stmt->execute([
@@ -85,6 +112,7 @@ try {
         $shipping_country,
         $total,
         $payment_method,
+        $card_last4,
         $invoice_notes
     ]);
     
@@ -135,11 +163,12 @@ try {
         'shipping_postal' => $shipping_postal,
         'shipping_country' => $shipping_country,
         'payment_method' => $payment_method,
+        'card_last4' => $card_last4,
         'notes' => $invoice_notes,
         'items' => $items,
         'subtotal' => $subtotal,
         'tax' => $tax,
-        'tax_rate' => 8,
+        'tax_rate' => 6,
         'shipping' => $shipping,
         'total' => $total
     ];

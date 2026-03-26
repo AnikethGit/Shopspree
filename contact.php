@@ -6,7 +6,8 @@ $messages = get_messages();
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Contact Us - Shopspree</title>
+    <title>Contact Us - PrintDepotCo</title>
+    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,8 +32,6 @@ $messages = get_messages();
         <div class="row gx-0 align-items-center">
             <div class="col-lg-4 text-center text-lg-start mb-lg-0">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="#" class="text-muted me-2">Help</a><small> / </small>
-                    <a href="#" class="text-muted mx-2">Support</a><small> / </small>
                     <a href="contact.php" class="text-muted ms-2">Contact</a>
                 </div>
             </div>
@@ -55,25 +54,12 @@ $messages = get_messages();
     </div>
 
     <div class="container-fluid px-5 py-4 d-none d-lg-block">
-        <div class="row gx-0 align-items-center">
+        <div class="row gx-0 align-items-center text-center">
             <div class="col-md-4 col-lg-3 text-center text-lg-start">
-                <a href="index.php" class="navbar-brand p-0">
-                    <h1 class="display-5 text-primary m-0"><i class="fas fa-shopping-bag text-secondary me-2"></i>Shopspree</h1>
-                </a>
-            </div>
-            <div class="col-md-4 col-lg-6 text-center">
-                <div class="position-relative ps-4">
-                    <form method="GET" action="shop.php" class="d-flex border rounded-pill">
-                        <input class="form-control border-0 rounded-pill w-100 py-3" type="text" name="search" placeholder="Search Looking For?">
-                        <button type="submit" class="btn btn-primary rounded-pill py-3 px-5" style="border:0"><i class="fas fa-search"></i></button>
-                    </form>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-3 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center">
-                    <a href="cart.php" class="text-muted d-flex align-items-center justify-content-center">
-                        <span class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                        <span class="text-dark ms-2">Cart</span>
+                    <a href="index.php" class="navbar-brand p-0">
+                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
                     </a>
                 </div>
             </div>
@@ -86,7 +72,8 @@ $messages = get_messages();
             <div class="col-12">
                 <nav class="navbar navbar-expand-lg navbar-light bg-primary">
                     <a href="index.php" class="navbar-brand d-block d-lg-none">
-                        <h1 class="display-5 text-secondary m-0"><i class="fas fa-shopping-bag text-white me-2"></i>Shopspree</h1>
+                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
                     </a>
                     <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                         <span class="fa fa-bars fa-1x"></span>
@@ -97,7 +84,6 @@ $messages = get_messages();
                             <a href="shop.php" class="nav-item nav-link">Shop</a>
                             <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
                             <a href="cart.php" class="nav-item nav-link">Cart</a>
-                            <a href="checkout.php" class="nav-item nav-link">Checkout</a>
                             <a href="contact.php" class="nav-item nav-link active">Contact</a>
                         </div>
                         <a href="#" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i class="fa fa-mobile-alt me-2"></i> +0123 456 7890</a>
@@ -205,7 +191,7 @@ $messages = get_messages();
                                         <i class="fas fa-envelope fa-2x text-primary"></i>
                                     </div>
                                     <h4>Mail Us</h4>
-                                    <p class="mb-2">info@example.com</p>
+                                    <p class="mb-2">info@printdepotco.com</p>
                                 </div>
                             </div>
                             <div class="col-md-6 col-xl-3">
@@ -223,7 +209,7 @@ $messages = get_messages();
                                         <i class="fab fa-firefox-browser fa-2x text-primary"></i>
                                     </div>
                                     <h4>Website</h4>
-                                    <p class="mb-2">www.shopspree.com</p>
+                                    <p class="mb-2">www.printdepotco.com</p>
                                 </div>
                             </div>
                         </div>
@@ -233,40 +219,47 @@ $messages = get_messages();
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer Start -->
     <div class="container-fluid bg-dark text-light footer pt-5">
         <div class="container py-5">
             <div class="row g-5">
-                <div class="col-md-6 col-lg-6 col-xl-3">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.1s">
                     <h5 class="text-light mb-4">Why Choose Us</h5>
-                    <p>Trusted electronics store with premium products, fast delivery, and excellent customer service.</p>
+                    <p class="mb-4">We provide high-performance printing solutions and expert support to maximize your efficiency and lower your long-term costs.</p>
+                    <div class="d-flex align-items-center">
+                        <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="">
+                    </div>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
                     <h5 class="text-light mb-4">Address</h5>
                     <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
                     <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                    <p><i class="fa fa-envelope me-3"></i>info@example.com</p>
+                    <p><i class="fa fa-envelope me-3"></i>info@printdepotco.com</p>
                     <div class="d-flex pt-2">
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-youtube"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-0" href=""><i class="fab fa-linkedin-in"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-twitter"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-youtube"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i
+                                class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
                     <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="index.php">Home</a>
-                    <a class="btn btn-link" href="shop.php">Shop</a>
-                    <a class="btn btn-link" href="cart.php">Cart</a>
-                    <a class="btn btn-link" href="checkout.php">Checkout</a>
-                    <a class="btn btn-link" href="contact.php">Contact</a>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="contact.php">Contact Us</a>
+                    <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
                     <h5 class="text-light mb-4">Newsletter</h5>
-                    <p>Subscribe to get special offers and updates</p>
+                    <p>Sign up for our newsletter</p>
                     <div class="position-relative w-100 mt-3">
-                        <input class="form-control border-light w-100 py-2 ps-4 pe-5" type="text" placeholder="Your Email" style="background:rgba(255,255,255,0.87)">
-                        <button type="button" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">SignUp</button>
+                        <input class="form-control border-light w-100 py-2 ps-4 pe-5" type="text"
+                            placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
+                        <button type="button"
+                            class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
                     </div>
                 </div>
             </div>
@@ -274,14 +267,15 @@ $messages = get_messages();
         <div class="container-fluid copyright">
             <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
                 <div class="text-center text-md-start mb-3 mb-md-0">
-                    &copy; <a class="border-bottom" href="#">Shopspree</a>, All Right Reserved.
+                    &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
                 </div>
                 <div class="text-center text-md-end">
-                    Designed By <a class="border-bottom" href="https://htmlcodex.com">aniketh_sahu</a>
+                    Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Footer End -->
 
     <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
 

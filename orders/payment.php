@@ -1,4 +1,4 @@
-<?php
++++++<?php
 /**
  * Payment Processing Page (Dummy Payment Gateway)
  * Displays realistic payment form and processes dummy transactions
@@ -440,7 +440,8 @@ function simulate_payment_processing($payment_method) {
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Payment - Shopspree</title>
+    <title>Payment - PrintDepotCo</title>
+    <link rel="icon" type="image/x-icon" href="../img/favicon.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -608,9 +609,7 @@ function simulate_payment_processing($payment_method) {
         <div class="row gx-0 align-items-center">
             <div class="col-lg-4 text-center text-lg-start mb-lg-0">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="#" class="text-muted me-2"> Help</a><small> / </small>
-                    <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
-                    <a href="#" class="text-muted ms-2"> Contact</a>
+                    <a href="../contact.php" class="text-muted ms-2"> Contact</a>
                 </div>
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
@@ -634,7 +633,8 @@ function simulate_payment_processing($payment_method) {
         <div class="row gx-0 align-items-center text-center">
             <div class="col-md-4 col-lg-3 text-center text-lg-start">
                 <a href="../index.php" class="navbar-brand p-0">
-                    <h1 class="display-5 text-primary m-0"><i class="fas fa-shopping-bag text-secondary me-2"></i>Electro</h1>
+                    <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
                 </a>
             </div>
         </div>
@@ -647,7 +647,8 @@ function simulate_payment_processing($payment_method) {
             <div class="col-12 col-lg-9 ms-auto">
                 <nav class="navbar navbar-expand-lg navbar-light bg-primary">
                     <a href="../index.php" class="navbar-brand d-block d-lg-none">
-                        <h1 class="display-5 text-secondary m-0"><i class="fas fa-shopping-bag text-white me-2"></i>Electro</h1>
+                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
                     </a>
                     <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                         <span class="fa fa-bars fa-1x"></span>
@@ -687,7 +688,7 @@ function simulate_payment_processing($payment_method) {
                 <div class="col-md-12 col-lg-8">
                     <div class="security-info">
                         <i class="fas fa-lock"></i>
-                        <span><strong>Secure Payment:</strong> Your payment information is encrypted and secure. This is a demo payment system.</span>
+                        <span><strong>Secure Payment:</strong> Your payment information is encrypted and secure.</span>
                     </div>
 
                     <!-- Payment Processing Overlay -->
@@ -736,12 +737,12 @@ function simulate_payment_processing($payment_method) {
                             <div class="row g-3">
                                 <div class="col-md-12">
                                     <label class="form-label">Cardholder Name *</label>
-                                    <input type="text" class="form-control" name="card_holder" id="cardHolder" placeholder="John Doe" required>
+                                    <input type="text" class="form-control" name="card_holder" id="cardHolder" placeholder="" required>
                                 </div>
                                 
                                 <div class="col-md-12">
                                     <label class="form-label">Card Number *</label>
-                                    <input type="text" class="form-control" name="card_number" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                                    <input type="text" class="form-control" name="card_number" id="cardNumber" placeholder="xxxx-xxxx-xxxx-xxxx" maxlength="19" required>
                                 </div>
                                 
                                 <div class="col-md-6">
@@ -772,7 +773,7 @@ function simulate_payment_processing($payment_method) {
                                 
                                 <div class="col-md-12">
                                     <label class="form-label">CVV (3-4 digits) *</label>
-                                    <input type="text" class="form-control" name="cvv" id="cvv" placeholder="123" maxlength="4" required>
+                                    <input type="text" class="form-control" name="cvv" id="cvv" placeholder="" maxlength="4" required>
                                 </div>
                             </div>
 
@@ -795,14 +796,11 @@ function simulate_payment_processing($payment_method) {
                                     <label class="form-label">Select Bank *</label>
                                     <select class="form-select" name="bank_name" required>
                                         <option value="">Choose a Bank</option>
-                                        <option value="State Bank of India">State Bank of India (SBI)</option>
                                         <option value="HDFC Bank">HDFC Bank</option>
                                         <option value="ICICI Bank">ICICI Bank</option>
                                         <option value="Axis Bank">Axis Bank</option>
                                         <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
-                                        <option value="Bank of Baroda">Bank of Baroda</option>
                                         <option value="Yes Bank">Yes Bank</option>
-                                        <option value="IndusInd Bank">IndusInd Bank</option>
                                         <option value="Other Bank">Other Bank</option>
                                     </select>
                                 </div>
@@ -828,9 +826,9 @@ function simulate_payment_processing($payment_method) {
                             
                             <div class="alert alert-info" role="alert">
                                 <i class="fab fa-paypal me-2"></i>
-                                You will be redirected to PayPal to securely complete your payment. For demo purposes, clicking "Process Payment" will simulate a successful PayPal transaction.
+                                You will be redirected to PayPal to securely complete your payment.
                             </div>
-                            <p class="text-muted">On a real store, you would log into your PayPal account and approve the payment before returning here.</p>
+                            <p class="text-muted">You could log into your PayPal account and approve the payment before returning here.</p>
 
                         <!-- Klarna Payment -->
                         <?php elseif ($payment_method === 'Klarna'): ?>
@@ -838,9 +836,9 @@ function simulate_payment_processing($payment_method) {
                             
                             <div class="alert alert-info" role="alert">
                                 <i class="fas fa-credit-card me-2"></i>
-                                Split your purchase into flexible installments with Klarna. This demo flow simulates a real Klarna authorization.
+                                Split your purchase into flexible installments with Klarna.
                             </div>
-                            <p class="text-muted">On a real store, you would review your Klarna plan, confirm your details and then authorize the payment.</p>
+                            <p class="text-muted">You could review your Klarna plan, confirm your details and then authorize the payment.</p>
 
                         <!-- Cash on Delivery -->
                         <?php else: ?>
@@ -899,18 +897,6 @@ function simulate_payment_processing($payment_method) {
                             <span>Total Amount:</span>
                             <span>$<?php echo number_format($total_amount, 2); ?></span>
                         </div>
-                    </div>
-
-                    <div class="alert alert-info" role="alert">
-                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Demo Payment Info</h6>
-                        <small>
-                            <p class="mb-2"><strong>Test Card Numbers (for Credit/Debit Card):</strong></p>
-                            <p class="mb-2">✓ 4532015112830366 (Success)</p>
-                            <p class="mb-2">✓ 5425233010103442 (Success)</p>
-                            <p class="mb-2">✓ 378282246310005 (Success)</p>
-                            <p class="mb-2">Use any expiry date in the future and any 3-digit CVV</p>
-                            <p class="mb-0 mt-2"><strong>PayPal & Klarna:</strong> These options are fully simulated – no real accounts are needed.</p>
-                        </small>
                     </div>
                 </div>
             </div>

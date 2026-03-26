@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>About Us - PrintDepotCo</title>
+    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="About PrintDepotCo - Online Shopping Store" name="description">
+    <meta content="PrintDepotCo, About Us, Online Shopping Store" name="keywords">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+    <!-- Brand + Search + Cart row -->
+    <div class="container-fluid px-5 py-4 d-none d-lg-block">
+        <div class="row gx-0 align-items-center text-center">
+            <div class="col-md-4 col-lg-3 text-center text-lg-start">
+                <div class="d-inline-flex align-items-center">
+                    <a href="index.php" class="navbar-brand p-0">
+                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-6 text-center">
+                <div class="position-relative ps-4">
+                    <form method="GET" action="shop.php" class="d-flex border rounded-pill">
+                        <input class="form-control border-0 rounded-pill w-100 py-3" type="text" name="search" placeholder="Search Looking For?">
+                        <button type="submit" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 text-center text-lg-end">
+                <div class="d-inline-flex align-items-center">
+                    <a href="cart.php" class="text-muted d-flex align-items-center justify-content-center">
+                        <span class="rounded-circle btn-md-square border">
+                            <i class="fas fa-shopping-cart"></i>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <div class="container-fluid nav-bar p-0">
+        <div class="row gx-0 bg-primary px-5 align-items-center">
+            <div class="col-12">
+                <nav class="navbar navbar-expand-lg navbar-light bg-primary">
+                    <a href="index.php" class="navbar-brand d-block d-lg-none">
+                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
+                    </a>
+                    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                        <span class="fa fa-bars fa-1x text-white"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="navbar-nav ms-auto py-0">
+                            <a href="index.php" class="nav-item nav-link">Home</a>
+                            <a href="shop.php" class="nav-item nav-link">Shop</a>
+                            <a href="orderstrack.php" class="nav-item nav-link">Track My Order</a>
+                            <a href="cart.php" class="nav-item nav-link">Cart</a>
+                            <a href="contact.php" class="nav-item nav-link me-2">Contact</a>
+                            <a href="about.html" class="nav-item nav-link active">About Us</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <!-- Navbar End -->
+
+    <!-- Page Header -->
+    <div class="container-fluid page-header mb-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container text-center py-5">
+            <h1 class="display-4 text-white animated slideInDown mb-3">About Us</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0">
+                    <li class="breadcrumb-item"><a class="text-white" href="index.php">Home</a></li>
+                    <li class="breadcrumb-item text-white active" aria-current="page">About Us</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- About Content -->
+    <div class="container py-5">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <h2 class="mb-3">Who We Are</h2>
+                <p>
+                    Print Depot Co is an online shopping destination created to make finding the right products simple, safe, and enjoyable for customers across the United States.
+                    We curate quality electronics, gadgets, and everyday essentials so you can shop confidently from one trusted place.
+                </p>
+                <p>
+                    Our team brings together ecommerce, logistics, and customer-support experience to deliver a smooth end‑to‑end shopping journey—from browsing and checkout to fast delivery and easy returns.
+                </p>
+
+                <h4 class="mt-4">Our Mission</h4>
+                <p>
+                    Our mission is to give everyday shoppers access to reliable products, fair prices, and friendly support—without the friction and uncertainty that can come with buying online.
+                    We believe that great service and clear communication are just as important as the products themselves.
+                </p>
+
+                <h4 class="mt-4">What Makes Us Different</h4>
+                <ul class="mb-0">
+                    <li><strong>Curated selection:</strong> We focus on products we would recommend to our own family and friends.</li>
+                    <li><strong>Clear policies:</strong> Transparent shipping, returns, and support so you always know what to expect.</li>
+                    <li><strong>Customer‑first mindset:</strong> We listen to feedback and use it to improve our catalog and experience.</li>
+                </ul>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="bg-light rounded p-4 h-100">
+                    <h4 class="mb-3"><i class="fas fa-bullseye text-primary me-2"></i>Our Values</h4>
+                    <p class="mb-2"><strong>Trust &amp; Transparency</strong></p>
+                    <p class="mb-3">
+                        We clearly communicate prices, promotions, and policies so you can make informed decisions and shop with confidence.
+                    </p>
+
+                    <p class="mb-2"><strong>Quality &amp; Reliability</strong></p>
+                    <p class="mb-3">
+                        We aim to list products from dependable brands and suppliers, and we continuously monitor quality based on customer reviews and returns.
+                    </p>
+
+                    <p class="mb-2"><strong>Customer Care</strong></p>
+                    <p class="mb-3">
+                        From pre‑purchase questions to post‑purchase support, our goal is to treat every interaction as an opportunity to help.
+                    </p>
+
+                    <p class="mb-2"><strong>Continuous Improvement</strong></p>
+                    <p class="mb-0">
+                        Ecommerce evolves quickly; we keep improving our catalog, website, and service so your experience gets better over time.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5 mt-5">
+            <div class="col-lg-6">
+                <h3 class="mb-3">Our Story</h3>
+                <p>
+                    Print Depot Co started with a simple idea: shopping for tech and everyday products online should feel as reliable as walking into your favorite local store.
+                    We saw how confusing product choices, unclear policies, and poor support could overwhelm shoppers, so we set out to build a better alternative.
+                </p>
+                <p class="mb-0">
+                    From our first orders to the customers we serve today, we have focused on doing the basics right—honest product information, fair pricing, responsive support, and a clean, easy‑to‑use website experience.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <h3 class="mb-3">Looking Ahead</h3>
+                <p>
+                    We are continuously expanding our catalog, optimizing delivery, and adding features that make shopping more convenient.
+                    As we grow, our priority remains the same: to be a store you feel comfortable recommending to your friends and family.
+                </p>
+                <p class="mb-0">
+                    Thank you for choosing Print Depot Co—we’re excited to be part of your everyday purchases, gifts, and big upgrades.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Start -->
+    <div class="container-fluid bg-dark text-light footer pt-5">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.1s">
+                    <h5 class="text-light mb-4">Why Choose Us</h5>
+                    <p class="mb-4">We provide high-performance printing solutions and expert support to maximize your efficiency and lower your long-term costs.</p>
+                    <div class="d-flex align-items-center">
+                        <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="">
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
+                    <h5 class="text-light mb-4">Address</h5>
+                    <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
+                    <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
+                    <p><i class="fa fa-envelope me-3"></i>info@printdepotco.com</p>
+                    <div class="d-flex pt-2">
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-twitter"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-youtube"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i
+                                class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
+                    <h5 class="text-light mb-4">Quick Links</h5>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="contact.php">Contact Us</a>
+                    <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
+                    <h5 class="text-light mb-4">Newsletter</h5>
+                    <p>Sign up for our newsletter</p>
+                    <div class="position-relative w-100 mt-3">
+                        <input class="form-control border-light w-100 py-2 ps-4 pe-5" type="text"
+                            placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
+                        <button type="button"
+                            class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid copyright">
+            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+                <div class="text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
+                </div>
+                <div class="text-center text-md-end">
+                    Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top">
+        <i class="fa fa-arrow-up"></i>
+    </a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+</body>
+</html>

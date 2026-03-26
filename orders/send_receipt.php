@@ -10,7 +10,7 @@ require_once __DIR__ . '/../config/helpers.php';
 function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_items, $totals, $payment_method, $shipping_address) {
     // Email configuration
     $to = $email;
-    $subject = "Order Confirmation - " . $order_id . " - Shopspree";
+    $subject = "Order Confirmation - " . $order_id . " - Print Depot Co";
     
     // Build items list for email
     $items_html = "";
@@ -34,7 +34,7 @@ function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_item
     }
     
     // Build tracking URL
-    $tracking_url = 'https://' . $_SERVER['HTTP_HOST'] . '/ecommerc/orders/track.php?order_id=' . urlencode($order_id);
+    $tracking_url = 'https://' . $_SERVER['HTTP_HOST'] . '/orders/track.php?order_id=' . urlencode($order_id);
     
     // Build email HTML
     $html_message = "
@@ -121,7 +121,7 @@ function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_item
             </div>
             
             <div class='footer'>
-                <p>&copy; 2026 Shopspree. All rights reserved.</p>
+                <p>&copy; 2026 Print Depot Co. All rights reserved.</p>
                 <p>This is an automated email. Please do not reply to this address.</p>
             </div>
         </div>
@@ -132,7 +132,7 @@ function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_item
     // Set headers
     $headers = "MIME-Version: 1.0" . "\r\n";
     $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-    $headers .= "From: noreply@shopspree.com" . "\r\n";
+    $headers .= "From: noreply@printdepotco.com" . "\r\n";
     
     // Send email
     $mail_sent = mail($to, $subject, $html_message, $headers);

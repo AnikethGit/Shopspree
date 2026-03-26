@@ -81,7 +81,7 @@ function get_cart_items() {
     return $cart_items;
 }
 
-function calculate_cart_totals($cart_items, $tax_rate = 0.08, $shipping = 50) {
+function calculate_cart_totals($cart_items, $tax_rate = 0.06, $shipping = 50) {
     $subtotal = 0.0;
     
     if (is_array($cart_items)) {
@@ -133,7 +133,7 @@ try {
 
     // Get cart data
     $cart_items = get_cart_items();
-    $totals = calculate_cart_totals($cart_items, 0.08, 50);
+    $totals = calculate_cart_totals($cart_items, 0.06, 50);
 
     if (empty($cart_items)) {
         add_message('Your cart is empty or products not found', 'error');

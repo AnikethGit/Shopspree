@@ -58,7 +58,8 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Track Your Order - Shopspree</title>
+    <title>Track Orders - Print Depot Co</title>
+    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -73,27 +74,27 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Libraries Stylesheet -->
-    <link href="../lib/animate/animate.min.css" rel="stylesheet">
-    <link href="../lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="../css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Template Stylesheet -->
     <link href="../css/style.css" rel="stylesheet">
-
+    
     <style>
-        body {
+        /* body {
             background-color: #f5f5f5;
-        }
+        } */
 
         .nav-bar {
             background-color: #0D6EFD;
         }
 
         .page-header {
-            background: linear-gradient(135deg, #0D6EFD 0%, #0056B3 100%);
-            color: white;
+            background: linear-gradient(135deg, #ffffff 0%, #c9a961 100%);
+            color: grey;
             padding: 60px 0;
             margin-bottom: 40px;
         }
@@ -424,6 +425,7 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
         }
     </style>
 </head>
+
 <body>
     <!-- Spinner Start -->
     <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -433,13 +435,96 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
     </div>
     <!-- Spinner End -->
 
+    <!-- Topbar Start -->
+    <div class="container-fluid px-5 d-none border-bottom d-lg-block">
+        <div class="row gx-0 align-items-center">
+            <div class="col-lg-4 text-center text-lg-start mb-lg-0">
+                <div class="d-inline-flex align-items-center" style="height: 45px;">
+                    <a href="contact.php" class="text-muted ms-2"> Contact Us</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
+                <small class="text-dark">Contact Us:</small>
+                <a href="contact.php" class="text-muted">(+012) 1234 567890</a>
+            </div>
+
+            <div class="col-lg-4 text-center text-lg-end">
+                <div class="d-inline-flex align-items-center" style="height: 45px;">
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>
+                                USD</small></a>
+                        <div class="dropdown-menu rounded">
+                            <a href="#" class="dropdown-item"> Euro</a>
+                            <a href="#" class="dropdown-item"> Dollar</a>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
+                                English</small></a>
+                        <div class="dropdown-menu rounded">
+                            <a href="#" class="dropdown-item"> English</a>
+                            <a href="#" class="dropdown-item"> Turkish</a>
+                            <a href="#" class="dropdown-item"> Spanish</a>
+                            <a href="#" class="dropdown-item"> Italian</a>
+                        </div>
+                    </div>
+                    <!-- <div class="dropdown">
+                        <a href="#" class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown"><small><i
+                                    class="fa fa-home me-2"></i> My Dashboard</small></a>
+                        <div class="dropdown-menu rounded">
+                            <a href="#" class="dropdown-item"> Login</a>
+                            <a href="#" class="dropdown-item"> Wishlist</a>
+                            <a href="#" class="dropdown-item"> My Card</a>
+                            <a href="#" class="dropdown-item"> Notifications</a>
+                            <a href="#" class="dropdown-item"> Account Settings</a>
+                            <a href="#" class="dropdown-item"> My Account</a>
+                            <a href="#" class="dropdown-item"> Log Out</a>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid px-5 py-4 d-none d-lg-block">
+        <div class="row gx-0 align-items-center text-center">
+            <div class="col-md-4 col-lg-3 text-center text-lg-start">
+                <div class="d-inline-flex align-items-center">
+                    <a href="" class="navbar-brand p-0">
+                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-6 text-center">
+                <div class="position-relative ps-4">
+                    <form method="GET" action="shop.php" class="d-flex border rounded-pill">
+                        <input class="form-control border-0 rounded-pill w-100 py-3" type="text" name="search" placeholder="Search Looking For?" value="<?php echo htmlspecialchars($search ?? ''); ?>">
+                        <button type="submit" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 text-center text-lg-end">
+                <div class="d-inline-flex align-items-center">
+                    <a href="cart.php" class="text-muted d-flex align-items-center justify-content-center"><span
+                        class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Topbar End -->
+
     <!-- Navbar & Hero Start -->
     <div class="container-fluid nav-bar p-0">
         <div class="row gx-0 bg-primary px-5 align-items-center">
-            <div class="col-12 col-lg-9 ms-auto">
-                <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-                    <a href="../index.php" class="navbar-brand d-block d-lg-none">
-                        <h1 class="display-5 text-secondary m-0" style="font-size: 1.5rem;"><i class="fas fa-shopping-bag text-white me-2"></i>Shopspree</h1>
+            <div class="col-lg-3 d-none d-lg-block">
+                <nav class="navbar navbar-light position-relative" style="width: 250px;">
+                </nav>
+            </div>
+            <div class="col-12 col-lg-9">
+                <nav class="navbar navbar-expand-lg navbar-light bg-primary ">
+                    <a href="index.php" class="navbar-brand d-block d-lg-none">
+                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
+                            style="height: 70px; width: auto; max-width: 100px;">
                     </a>
                     <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                         <span class="fa fa-bars fa-1x"></span>
@@ -448,8 +533,10 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
                         <div class="navbar-nav ms-auto py-0">
                             <a href="../index.php" class="nav-item nav-link">Home</a>
                             <a href="../shop.php" class="nav-item nav-link">Shop</a>
+                            <a href="../about.html" class="nav-item nav-link">About Us</a>
+                            <a href="orders/track.php" class="nav-item nav-link active">Track My Order</a>
                             <a href="../cart.php" class="nav-item nav-link">Cart</a>
-                            <a href="../index.php#contact" class="nav-item nav-link me-2">Contact</a>
+                            <a href="../contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
                 </nav>
@@ -539,10 +626,46 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
                             <div class="timeline-marker <?php echo $marker_class; ?>">
                                 <i class="fas fa-check"></i>
                             </div>
+                            <!-- <div class="timeline-content">
+                                <h4><?php echo htmlspecialchars($status); ?></h4>
+                                <p><?php echo $status_text; ?></p>
+                            </div> -->
+                            
                             <div class="timeline-content">
                                 <h4><?php echo htmlspecialchars($status); ?></h4>
                                 <p><?php echo $status_text; ?></p>
+                            
+                                <?php
+                                // Decide which timestamp to show for this status
+                                $timestamp = null;
+                                $current_index = array_search($current_status, $statuses);
+                            
+                                // 1) Pending: show when order was created
+                                if ($status === 'Pending' && !empty($order['created_at'])) {
+                                    $timestamp = $order['created_at'];
+                                }
+                                // 2) For Processing / Shipped / Delivered:
+                                //    show updated_at once the order has reached at least that status
+                                elseif ($index <= $current_index && !empty($order['updated_at'])) {
+                                    $timestamp = $order['updated_at'];
+                                }
+                            
+                                if ($timestamp):
+                                ?>
+                                    <small class="text-muted" style="font-size: 0.82rem; margin-top: 4px; display: block;">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <?php
+                                            $dt = new DateTime($timestamp, new DateTimeZone('UTC'));
+                                            echo $dt->format('d M Y, h:i A') . ' UTC';
+                                        ?>
+                                    </small>
+                                <?php elseif ($is_pending): ?>
+                                    <small class="text-muted" style="font-size: 0.82rem; margin-top: 4px; display: block;">
+                                        <i class="fas fa-hourglass-half me-1"></i> Awaiting
+                                    </small>
+                                <?php endif; ?>
                             </div>
+                            
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -626,32 +749,43 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
     <div class="container-fluid bg-dark text-light footer pt-5">
         <div class="container py-5">
             <div class="row g-5">
-                <div class="col-md-6 col-lg-6 col-xl-3">
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.1s">
                     <h5 class="text-light mb-4">Why Choose Us</h5>
-                    <p class="mb-4">Shopspree offers the best electronics with competitive pricing, fast shipping, and exceptional customer service.</p>
+                    <p class="mb-4">We provide high-performance printing solutions and expert support to maximize your efficiency and lower your long-term costs.</p>
                     <div class="d-flex align-items-center">
-                        <h4 class="text-secondary m-0"><i class="fas fa-shopping-bag text-primary me-2"></i>Shopspree</h4>
+                        <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="">
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-6 col-xl-3">
-                    <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="../index.php">Home</a>
-                    <a class="btn btn-link" href="../shop.php">Shop</a>
-                    <a class="btn btn-link" href="../cart.php">Cart</a>
-                    <a class="btn btn-link" href="../index.php#contact">Contact</a>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3">
-                    <h5 class="text-light mb-4">Need Help?</h5>
-                    <p><i class="fa fa-phone-alt me-3"></i>(+012) 1234 567890</p>
-                    <p><i class="fa fa-envelope me-3"></i>support@shopspree.com</p>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3">
-                    <h5 class="text-light mb-4">Follow Us</h5>
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
+                    <h5 class="text-light mb-4">Address</h5>
+                    <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
+                    <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
+                    <p><i class="fa fa-envelope me-3"></i>info@printdepotco.com</p>
                     <div class="d-flex pt-2">
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-youtube"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i class="fab fa-linkedin-in"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-twitter"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
+                                class="fab fa-youtube"></i></a>
+                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i
+                                class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
+                    <h5 class="text-light mb-4">Quick Links</h5>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="contact.php">Contact Us</a>
+                    <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
+                    <h5 class="text-light mb-4">Newsletter</h5>
+                    <p>Sign up for our newsletter</p>
+                    <div class="position-relative w-100 mt-3">
+                        <input class="form-control border-light w-100 py-2 ps-4 pe-5" type="text"
+                            placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
+                        <button type="button"
+                            class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
                     </div>
                 </div>
             </div>
@@ -659,10 +793,10 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
         <div class="container-fluid copyright">
             <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
                 <div class="text-center text-md-start mb-3 mb-md-0">
-                    &copy; <a class="border-bottom" href="#">Shopspree</a>, All Right Reserved.
+                    &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
                 </div>
                 <div class="text-center text-md-end">
-                    <a class="border-bottom" href="track.php">Order Tracking</a>
+                    Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
                 </div>
             </div>
         </div>

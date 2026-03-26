@@ -25,7 +25,7 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Invoice - Admin</title>
+    <title>Generate Invoice - PrintDepotCo</title>
     <style>
         * {
             margin: 0;
@@ -298,7 +298,7 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚡ Generate Invoice</h1>
+            <h1>PrintDepotCo - Generate Invoice</h1>
             <p>Create manual invoice for offline purchases</p>
         </div>
 
@@ -361,6 +361,38 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
                         </div>
                     </div>
                 </div>
+                
+                <!-- Order ID Options (NEW SECTION) -->
+                <div class="form-section">
+                    <div class="section-title">Order ID</div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="order_id_mode" id="order_id_auto" value="auto" checked>
+                            <label class="form-check-label" for="order_id_auto">
+                                Generate automatically
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="order_id_mode" id="order_id_manual" value="manual">
+                            <label class="form-check-label" for="order_id_manual">
+                                Enter manually
+                            </label>
+                        </div>
+                
+                        <input type="text"
+                               name="manual_order_id"
+                               id="manual_order_id"
+                               class="form-control mt-2"
+                               placeholder="e.g., OFFLINE-INV-001"
+                               autocomplete="off"
+                               disabled>
+                        <small class="text-muted">
+                            Leave empty to auto-generate. Make sure manual IDs are unique.
+                        </small>
+                    </div>
+                </div>
 
                 <!-- Items Selection -->
                 <div class="form-section">
@@ -380,7 +412,7 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
                             <span class="summary-value">₹<span id="subtotalValue">0.00</span></span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Tax (8%):</span>
+                            <span class="summary-label">Tax (6%):</span>
                             <span class="summary-value">₹<span id="taxValue">0.00</span></span>
                         </div>
                         <div class="summary-row">
@@ -402,7 +434,7 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
                     <input type="hidden" name="items_json" id="itemsJson">
                 </div>
 
-                <!-- Payment Method -->
+                <!-- Payment Method
                 <div class="form-section">
                     <div class="section-title">Payment Details</div>
                     <div class="form-grid">
@@ -419,7 +451,59 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
                             </select>
                         </div>
                     </div>
+                </div> -->
+                
+                <!-- Payment Method -->
+                <div class="form-section">
+                    <div class="section-title">Payment Details</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Payment Method <span class="required">*</span></label>
+                            <select name="payment_method" id="payment_method" required onchange="toggleCardField()">
+                                <option value="-- Select Payment Method --"></option>
+                                <option value="Cash">Cash</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Cheque">Cheque</option>
+                            </select>
+                        </div>
+                        
+                        <!-- NEW: Last 4 card digits field -->
+                        <div class="form-group" id="card_last4_group" style="display: none;">
+                            <label>Last 4 Digits (Card)</label>
+                            <input type="text" 
+                                   name="card_last4" 
+                                   id="card_last4" 
+                                   maxlength="4" 
+                                   pattern="[0-9]{4}" 
+                                   class="form-control"
+                                   placeholder="e.g., 1234"
+                                   title="Enter exactly 4 digits" required>
+                            <small class="text-muted">Last 4 digits of the card used</small>
+                        </div>
+                    </div>
                 </div>
+                
+                <script>
+                function toggleCardField() {
+                    const method = document.getElementById('payment_method').value;
+                    const cardGroup = document.getElementById('card_last4_group');
+                    const cardInput = document.getElementById('card_last4');
+                    
+                    if (method === 'Credit Card' || method === 'Debit Card') {
+                        cardGroup.style.display = 'block';
+                        cardInput.required = true;
+                    } else {
+                        cardGroup.style.display = 'none';
+                        cardInput.required = false;
+                        cardInput.value = '';
+                    }
+                }
+                
+                // Initialize on page load
+                toggleCardField();
+                </script>
 
                 <!-- Notes -->
                 <div class="form-section">
@@ -523,7 +607,7 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
                 }
             });
 
-            const tax = subtotal * 0.08;
+            const tax = subtotal * 0.06;
             const shipping = parseFloat(document.getElementById('shippingInput').value) || 0;
             const total = subtotal + tax + shipping;
 
@@ -551,6 +635,25 @@ $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
 
         // Initialize with one empty item row
         addItem();
+        
+        // Order ID field toggle
+        const autoRadio = document.getElementById('order_id_auto');
+        const manualRadio = document.getElementById('order_id_manual');
+        const manualInput = document.getElementById('manual_order_id');
+        
+        function toggleOrderIdField() {
+            if (manualRadio.checked) {
+                manualInput.removeAttribute('disabled');
+            } else {
+                manualInput.value = '';
+                manualInput.setAttribute('disabled', 'disabled');
+            }
+        }
+        
+        autoRadio?.addEventListener('change', toggleOrderIdField);
+        manualRadio?.addEventListener('change', toggleOrderIdField);
+        toggleOrderIdField(); // Initialize
+
     </script>
 </body>
 </html>
