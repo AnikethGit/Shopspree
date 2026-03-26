@@ -92,11 +92,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Hash password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
+        // Default role — must be set BEFORE bind_param
+        $role = 'customer';
+        
         // Insert user
         $stmt = $conn->prepare('INSERT INTO users (first_name, last_name, email, phone, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())');
         $stmt->bind_param('ssssss', $first_name, $last_name, $email, $phone, $hashed_password, $role);
-        
-        $role = 'customer'; // Default role
         
         if ($stmt->execute()) {
             $response['success'] = true;
