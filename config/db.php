@@ -16,6 +16,13 @@ $password = ""; // Your database password (from cPanel)
 $dbname = ""; // Your database name (from cPanel)
 
 // ============================================
+// Session Start (guarded to prevent conflicts)
+// ============================================
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// ============================================
 // MySQLi Connection Setup
 // ============================================
 try {
