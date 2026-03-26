@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert user
     if (empty($errors)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $user_type = 'customer'; // maps to DB column user_type
+        $user_type = 'customer';
 
         $stmt = $conn->prepare(
             'INSERT INTO users (email, password, full_name, phone, user_type) VALUES (?, ?, ?, ?, ?)'
@@ -69,13 +69,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param('sssss', $email, $hashed_password, $full_name, $phone, $user_type);
 
         if ($stmt->execute()) {
+            $new_user_id = $conn->insert_id;
+            $stmt->close();
+
+            // Link any guest orders placed with this email to the new account
+            $link_stmt = $conn->prepare(
+                'UPDATE orders SET user_id = ? WHERE email = ? AND (user_id IS NULL OR user_id = 0)'
+            );
+            $link_stmt->bind_param('is', $new_user_id, $email);
+            $link_stmt->execute();
+            $link_stmt->close();
+
             $response['success'] = true;
             $response['message'] = 'Registration successful! You can now login.';
         } else {
             $response['message'] = 'Registration failed. Please try again.';
             error_log('Register error: ' . $conn->error);
         }
-        $stmt->close();
     } else {
         $response['errors'] = $errors;
         $response['message'] = 'Please fix the errors below';

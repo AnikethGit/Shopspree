@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
 
-        // Select using actual DB columns: full_name, user_type
+        // Select using actual DB columns: full_name, user_type, is_active
         $stmt = $conn->prepare(
             'SELECT id, full_name, email, password, user_type FROM users WHERE email = ? AND is_active = 1'
         );
@@ -43,18 +43,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (password_verify($password, $user['password'])) {
 
-                // Split full_name into first/last for display in navbar
+                $user_id = $user['id'];
+
+                // Link any guest orders placed with this email to this account
+                $link_stmt = $conn->prepare(
+                    'UPDATE orders SET user_id = ? WHERE email = ? AND (user_id IS NULL OR user_id = 0)'
+                );
+                $link_stmt->bind_param('is', $user_id, $email);
+                $link_stmt->execute();
+                $link_stmt->close();
+
+                // Split full_name for display
                 $name_parts = explode(' ', $user['full_name'], 2);
                 $first_name = $name_parts[0];
                 $last_name  = $name_parts[1] ?? '';
 
                 // Set session variables
-                $_SESSION['user_id']    = $user['id'];
+                $_SESSION['user_id']    = $user_id;
                 $_SESSION['full_name']  = $user['full_name'];
-                $_SESSION['first_name'] = $first_name;   // used in navbar greeting
+                $_SESSION['first_name'] = $first_name;
                 $_SESSION['last_name']  = $last_name;
                 $_SESSION['email']      = $user['email'];
-                $_SESSION['role']       = $user['user_type']; // map user_type -> role
+                $_SESSION['role']       = $user['user_type'];
 
                 $response['success'] = true;
                 $response['message'] = 'Login successful!';
