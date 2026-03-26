@@ -1,7 +1,7 @@
 <?php
 // Include database configuration
 require_once 'config/db.php';
-// Session is already started in db.php, don't start it again!
+// Session is already started in db.php (guarded), don't start it again!
 
 // Initialize cart if not exists
 if (!isset($_SESSION['cart'])) {
@@ -261,19 +261,6 @@ if (is_array($_SESSION['cart'])) {
                             <a href="#" class="dropdown-item"> Italian</a>
                         </div>
                     </div>
-                    <!-- <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown"><small><i
-                                    class="fa fa-home me-2"></i> My Dashboard</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Login</a>
-                            <a href="#" class="dropdown-item"> Wishlist</a>
-                            <a href="#" class="dropdown-item"> My Card</a>
-                            <a href="#" class="dropdown-item"> Notifications</a>
-                            <a href="#" class="dropdown-item"> Account Settings</a>
-                            <a href="#" class="dropdown-item"> My Account</a>
-                            <a href="#" class="dropdown-item"> Log Out</a>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
@@ -349,16 +336,25 @@ if (is_array($_SESSION['cart'])) {
                             <a href="shop.php" class="nav-item nav-link">Shop</a>
                             <a href="about.html" class="nav-item nav-link">About Us</a>
                             <a href="orders/track.php" class="nav-item nav-link">Track Orders</a>
-                            <!-- <div class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
-                                <div class="dropdown-menu m-0">
-                                    <a href="shop.php" class="dropdown-item">All Products</a>
-                                    <a href="cart.php" class="dropdown-item">Cart Page</a>
-                                    <a href="checkout.php" class="dropdown-item">Checkout</a>
-                                </div>
-                            </div> -->
                             <a href="cart.php" class="nav-item nav-link">Cart</a>
                             <a href="contact.php" class="nav-item nav-link me-2">Contact</a>
+
+                            <!-- User Account Menu -->
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <div class="nav-item dropdown">
+                                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                                        <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($_SESSION['first_name']); ?>
+                                    </a>
+                                    <div class="dropdown-menu m-0">
+                                        <a href="user/profile.php" class="dropdown-item">My Profile</a>
+                                        <a href="user/logout.php" class="dropdown-item text-danger">Logout</a>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <a href="user/login.php" class="nav-item nav-link">Login</a>
+                                <a href="user/register.php" class="nav-item nav-link">Register</a>
+                            <?php endif; ?>
+
                             <div class="nav-item dropdown d-block d-lg-none mb-3">
                                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">All Category</a>
                                 <div class="dropdown-menu m-0">
@@ -377,8 +373,6 @@ if (is_array($_SESSION['cart'])) {
                                 </div>
                             </div>
                         </div>
-                        <!-- <a href="" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i
-                                class="fa fa-mobile-alt me-2"></i> +0123 456 7890</a> -->
                     </div>
                 </nav>
             </div>
@@ -438,8 +432,6 @@ if (is_array($_SESSION['cart'])) {
                         <form method="POST" style="display: inline;">
                             <input type="hidden" name="add_to_cart" value="1">
                             <input type="hidden" name="product_id" value="1">
-                            <!-- <button type="submit" class="btn btn-primary rounded-pill py-2 px-4" style="border: none; cursor: pointer;"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</button> -->
                         </form>
                     </div>
                 </div>
@@ -569,21 +561,6 @@ if (is_array($_SESSION['cart'])) {
                                     <span class="text-dark" style="width: 130px;">All Products</span>
                                 </a>
                             </li>
-                            <!-- <li class="nav-item mb-4">
-                                <a class="d-flex py-2 mx-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-2">
-                                    <span class="text-dark" style="width: 130px;">New Arrivals</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-4">
-                                <a class="d-flex mx-2 py-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-3">
-                                    <span class="text-dark" style="width: 130px;">Featured</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-4">
-                                <a class="d-flex mx-2 py-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-4">
-                                    <span class="text-dark" style="width: 130px;">Top Selling</span>
-                                </a>
-                            </li> -->
                         </ul>
                     </div>
                 </div>
@@ -638,16 +615,6 @@ if (is_array($_SESSION['cart'])) {
                                                 <i class="fas fa-star text-primary"></i>
                                                 <i class="fas fa-star"></i>
                                             </div>
-                                            <!-- <div class="d-flex">
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-sync-alt"></i></span></a>
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-heart"></i></span></a>
-                                            </div> -->
                                         </div>
                                     </div>
                                 </div>
@@ -694,33 +661,6 @@ if (is_array($_SESSION['cart'])) {
                                             <span class="text-primary fs-5">$<?php echo $product_price; ?></span>
                                         </div>
                                     </div>
-                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="add_to_cart" value="1">
-                                            <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
-                                            <!-- <button type="submit" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4" style="border: none; cursor: pointer;"><i
-                                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</button> -->
-                                        </form>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
-                                            <div class="d-flex">
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-sync-alt"></i></span></a>
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-heart"></i></span></a>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                             <?php
@@ -762,33 +702,6 @@ if (is_array($_SESSION['cart'])) {
                                             <span class="text-primary fs-5">$<?php echo $product_price; ?></span>
                                         </div>
                                     </div>
-                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="add_to_cart" value="1">
-                                            <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
-                                            <!-- <button type="submit" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4" style="border: none; cursor: pointer;"><i
-                                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</button> -->
-                                        </form>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
-                                            <div class="d-flex">
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-sync-alt"></i></span></a>
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-heart"></i></span></a>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                             <?php
@@ -828,33 +741,6 @@ if (is_array($_SESSION['cart'])) {
                                             <a href="single.php?id=<?php echo $product_id; ?>" class="d-block h4"><?php echo $product_name; ?></a>
                                             <del class="me-2 fs-5">$<?php echo $original_price; ?></del>
                                             <span class="text-primary fs-5">$<?php echo $product_price; ?></span>
-                                        </div>
-                                    </div>
-                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="add_to_cart" value="1">
-                                            <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
-                                            <!-- <button type="submit" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4" style="border: none; cursor: pointer;"><i
-                                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</button> -->
-                                        </form>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
-                                            <div class="d-flex">
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-sync-alt"></i></span></a>
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-heart"></i></span></a>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
