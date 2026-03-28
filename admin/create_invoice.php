@@ -3,192 +3,170 @@
  * Invoice Creation & PDF Generation
  * Processes manual invoice form and generates downloadable PDF
  * Creates database entries identical to online orders
+ * ACCESS: Admin only (user_type = 'admin')
  */
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
 
-// Check admin access
+// --- Admin Auth Guard ---
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    add_message('Access denied. Admin privileges required.', 'error');
+    header('Location: ../user/login.php');
+    exit;
+}
+// --- End Auth Guard ---
+
+// Must be a POST request
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('generate_invoice.php?admin_key=admin_access_key');
+    header('Location: generate_invoice.php');
+    exit;
 }
 
 try {
     // Validate required fields
-    $required_fields = ['customer_name', 'customer_email', 'customer_phone', 'shipping_address', 
-                       'shipping_city', 'shipping_state', 'shipping_postal', 'shipping_country', 
-                       'payment_method', 'items_json'];
-    
+    $required_fields = ['customer_name', 'customer_email', 'customer_phone', 'shipping_address',
+                        'shipping_city', 'shipping_state', 'shipping_postal', 'shipping_country',
+                        'payment_method', 'items_json'];
+
     foreach ($required_fields as $field) {
         if (empty($_POST[$field])) {
             throw new Exception(ucfirst(str_replace('_', ' ', $field)) . ' is required');
         }
     }
-    
+
     // Parse form data
-    $customer_name = sanitize($_POST['customer_name']);
-    $customer_email = sanitize($_POST['customer_email']);
-    $customer_phone = sanitize($_POST['customer_phone']);
+    $customer_name    = sanitize($_POST['customer_name']);
+    $customer_email   = sanitize($_POST['customer_email']);
+    $customer_phone   = sanitize($_POST['customer_phone']);
     $customer_company = sanitize($_POST['customer_company'] ?? '');
     $shipping_address = sanitize($_POST['shipping_address']);
-    $shipping_city = sanitize($_POST['shipping_city']);
-    $shipping_state = sanitize($_POST['shipping_state']);
-    $shipping_postal = sanitize($_POST['shipping_postal']);
+    $shipping_city    = sanitize($_POST['shipping_city']);
+    $shipping_state   = sanitize($_POST['shipping_state']);
+    $shipping_postal  = sanitize($_POST['shipping_postal']);
     $shipping_country = sanitize($_POST['shipping_country']);
-    $payment_method = sanitize($_POST['payment_method']);
-    $invoice_notes = sanitize($_POST['invoice_notes'] ?? '');
-    
+    $payment_method   = sanitize($_POST['payment_method']);
+    $invoice_notes    = sanitize($_POST['invoice_notes'] ?? '');
+
     // Parse items JSON
     $items_json = $_POST['items_json'];
     $items = json_decode($items_json, true);
-    
+
     if (empty($items)) {
         throw new Exception('No items in invoice');
     }
-    
+
     // Validate email
     if (!is_valid_email($customer_email)) {
         throw new Exception('Invalid email address');
     }
-    
-    // Get totals from form
+
+    // Get totals
     $subtotal = floatval($_POST['subtotal'] ?? 0);
-    $tax = floatval($_POST['tax'] ?? 0);
+    $tax      = floatval($_POST['tax'] ?? 0);
     $shipping = floatval($_POST['shipping'] ?? 0);
-    $total = floatval($_POST['total'] ?? 0);
-    
+    $total    = floatval($_POST['total'] ?? 0);
+
     // Start transaction
     $pdo->beginTransaction();
-    
-    // Generate unique order ID
-    // $order_id = generate_order_id();
-    
-    // Decide order ID: manual (if provided) or auto-generated
-    $order_id_mode   = $_POST['order_id_mode']   ?? 'auto';
+
+    // Decide order ID
+    $order_id_mode   = $_POST['order_id_mode'] ?? 'auto';
     $manual_order_id = trim($_POST['manual_order_id'] ?? '');
-    
+
     if ($order_id_mode === 'manual' && $manual_order_id !== '') {
-        // Ensure uniqueness in DB
         $checkStmt = $pdo->prepare("SELECT id FROM orders WHERE order_id = ? LIMIT 1");
         $checkStmt->execute([$manual_order_id]);
         if ($checkStmt->fetch()) {
-            throw new Exception('Order ID "' . $manual_order_id . '" already exists. Please choose a different one.');
+            throw new Exception('Order ID "' . htmlspecialchars($manual_order_id) . '" already exists. Please choose a different one.');
         }
-        
         $order_id = $manual_order_id;
     } else {
-        // Fallback to existing generator
         $order_id = generate_order_id();
-}
-    
-    // Create full shipping address
+    }
+
     $full_address = $shipping_address . ', ' . $shipping_city . ', ' . $shipping_state;
-    
-    // Insert order
+
+    // Handle card last4
     $card_last4 = null;
     if (in_array($payment_method, ['Credit Card', 'Debit Card']) && !empty($_POST['card_last4'])) {
-        $card_last4 = substr(trim($_POST['card_last4']), 0, 4); // Ensure exactly 4 digits
+        $card_last4 = substr(trim($_POST['card_last4']), 0, 4);
         if (!preg_match('/^[0-9]{4}$/', $card_last4)) {
             throw new Exception('Card last 4 digits must be exactly 4 numbers.');
         }
     }
-    
+
+    // Insert order
     $stmt = $pdo->prepare(
-        "INSERT INTO orders (order_id, email, phone, shipping_address, shipping_city, 
-        shipping_state, shipping_postal_code, shipping_country, total_amount, payment_method, 
-        card_last4, order_status, notes, created_at) 
+        "INSERT INTO orders (order_id, email, phone, shipping_address, shipping_city,
+        shipping_state, shipping_postal_code, shipping_country, total_amount, payment_method,
+        card_last4, order_status, notes, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Offline', ?, NOW())"
     );
-    
     $stmt->execute([
-        $order_id,
-        $customer_email,
-        $customer_phone,
-        $full_address,
-        $shipping_city,
-        $shipping_state,
-        $shipping_postal,
-        $shipping_country,
-        $total,
-        $payment_method,
-        $card_last4,
-        $invoice_notes
+        $order_id, $customer_email, $customer_phone, $full_address,
+        $shipping_city, $shipping_state, $shipping_postal, $shipping_country,
+        $total, $payment_method, $card_last4, $invoice_notes
     ]);
-    
-    // Get the created order's database ID
+
     $order_db_id = $pdo->lastInsertId();
-    
+
     // Insert order items
     $item_stmt = $pdo->prepare(
-        "INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal) 
+        "INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal)
          VALUES (?, ?, ?, ?, ?, ?)"
     );
-    
+
     foreach ($items as $item) {
         $item_subtotal = $item['price'] * $item['quantity'];
         $item_stmt->execute([
-            $order_db_id,
-            $item['id'],
-            $item['name'],
-            $item['quantity'],
-            $item['price'],
-            $item_subtotal
+            $order_db_id, $item['id'], $item['name'],
+            $item['quantity'], $item['price'], $item_subtotal
         ]);
-        
-        // Update product stock (optional - for offline sales)
-        $stock_stmt = $pdo->prepare(
-            "UPDATE products SET quantity = quantity - ? WHERE id = ?"
-        );
+        // Update stock
+        $stock_stmt = $pdo->prepare("UPDATE products SET quantity = quantity - ? WHERE id = ?");
         $stock_stmt->execute([$item['quantity'], $item['id']]);
     }
-    
-    // Commit transaction
+
     $pdo->commit();
-    
+
     // Generate PDF
     require_once __DIR__ . '/../lib/pdf_generator.php';
     $pdf = new InvoicePDF();
-    
+
     $invoice_data = [
-        'order_id' => $order_id,
-        'order_date' => date('Y-m-d H:i'),
-        'customer_name' => $customer_name,
-        'customer_email' => $customer_email,
-        'customer_phone' => $customer_phone,
+        'order_id'         => $order_id,
+        'order_date'       => date('Y-m-d H:i'),
+        'customer_name'    => $customer_name,
+        'customer_email'   => $customer_email,
+        'customer_phone'   => $customer_phone,
         'customer_company' => $customer_company,
         'shipping_address' => $full_address,
-        'shipping_city' => $shipping_city,
-        'shipping_state' => $shipping_state,
-        'shipping_postal' => $shipping_postal,
+        'shipping_city'    => $shipping_city,
+        'shipping_state'   => $shipping_state,
+        'shipping_postal'  => $shipping_postal,
         'shipping_country' => $shipping_country,
-        'payment_method' => $payment_method,
-        'card_last4' => $card_last4,
-        'notes' => $invoice_notes,
-        'items' => $items,
-        'subtotal' => $subtotal,
-        'tax' => $tax,
-        'tax_rate' => 6,
-        'shipping' => $shipping,
-        'total' => $total
+        'payment_method'   => $payment_method,
+        'card_last4'       => $card_last4,
+        'notes'            => $invoice_notes,
+        'items'            => $items,
+        'subtotal'         => $subtotal,
+        'tax'              => $tax,
+        'tax_rate'         => 6,
+        'shipping'         => $shipping,
+        'total'            => $total
     ];
-    
-    // Generate and download PDF
+
     $filename = 'Invoice_' . $order_id . '_' . date('Ymd') . '.pdf';
     $pdf->generateInvoice($invoice_data, $filename);
-    
+
 } catch (Exception $e) {
-    // Rollback if error
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    
-    // Log error
     error_log('Invoice creation error: ' . $e->getMessage());
-    
-    // Redirect with error
-    header('Location: generate_invoice.php?admin_key=admin_access_key&error=' . urlencode($e->getMessage()));
+    header('Location: generate_invoice.php?error=' . urlencode($e->getMessage()));
     exit();
 }
-
 ?>
