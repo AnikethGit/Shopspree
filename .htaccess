@@ -22,3 +22,16 @@ AddDefaultCharset UTF-8
 
 # Custom error pages
 ErrorDocument 404 /printdepotco/404.html
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^.]+)$ $1.html [NC,L]
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [NC,L]
+
+

@@ -440,51 +440,27 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
         <div class="row gx-0 align-items-center">
             <div class="col-lg-4 text-center text-lg-start mb-lg-0">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="contact.php" class="text-muted ms-2"> Contact Us</a>
+                    <a href="contact.php" class="text-muted ms-2">Contact</a>
                 </div>
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
-                <small class="text-dark">Contact Us:</small>
-                <a href="contact.php" class="text-muted">(+012) 1234 567890</a>
+                <small class="text-dark">Call Us:</small>
+                <a href="#" class="text-muted">(+012) 1234 567890</a>
             </div>
-
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
                     <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>
-                                USD</small></a>
+                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>USD</small></a>
                         <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Euro</a>
-                            <a href="#" class="dropdown-item"> Dollar</a>
+                            <a href="#" class="dropdown-item">Euro</a>
+                            <a href="#" class="dropdown-item">Dollar</a>
                         </div>
                     </div>
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
-                                English</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> English</a>
-                            <a href="#" class="dropdown-item"> Turkish</a>
-                            <a href="#" class="dropdown-item"> Spanish</a>
-                            <a href="#" class="dropdown-item"> Italian</a>
-                        </div>
-                    </div>
-                    <!-- <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown"><small><i
-                                    class="fa fa-home me-2"></i> My Dashboard</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Login</a>
-                            <a href="#" class="dropdown-item"> Wishlist</a>
-                            <a href="#" class="dropdown-item"> My Card</a>
-                            <a href="#" class="dropdown-item"> Notifications</a>
-                            <a href="#" class="dropdown-item"> Account Settings</a>
-                            <a href="#" class="dropdown-item"> My Account</a>
-                            <a href="#" class="dropdown-item"> Log Out</a>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
     </div>
+    
     <div class="container-fluid px-5 py-4 d-none d-lg-block">
         <div class="row gx-0 align-items-center text-center">
             <div class="col-md-4 col-lg-3 text-center text-lg-start">
@@ -774,8 +750,8 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
                     <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="about.html">About Us</a>
-                    <a class="btn btn-link" href="contact.php">Contact Us</a>
+                    <a class="btn btn-link" href="about.html">About Us</a><br>
+                    <a class="btn btn-link" href="contact.php">Contact Us</a><br>
                     <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
@@ -786,7 +762,7 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
                             placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
                         <button type="button"
                             class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
-                    </div>
+                    </div> 
                 </div>
             </div>
         </div>
@@ -795,9 +771,9 @@ $status_color = isset($status_colors[$current_status]) ? $status_colors[$current
                 <div class="text-center text-md-start mb-3 mb-md-0">
                     &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
                 </div>
-                <div class="text-center text-md-end">
+                <!-- <div class="text-center text-md-end">
                     Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

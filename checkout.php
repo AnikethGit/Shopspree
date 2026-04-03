@@ -471,8 +471,8 @@ try {
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
                     <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="about.html">About Us</a>
-                    <a class="btn btn-link" href="contact.php">Contact Us</a>
+                    <a class="btn btn-link" href="about.html">About Us</a><br>
+                    <a class="btn btn-link" href="contact.php">Contact Us</a><br>
                     <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
@@ -483,7 +483,7 @@ try {
                             placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
                         <button type="button"
                             class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
-                    </div>
+                    </div> 
                 </div>
             </div>
         </div>
@@ -492,9 +492,9 @@ try {
                 <div class="text-center text-md-start mb-3 mb-md-0">
                     &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
                 </div>
-                <div class="text-center text-md-end">
+                <!-- <div class="text-center text-md-end">
                     Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

@@ -5,8 +5,10 @@
  * Creates database entries identical to online orders
  * ACCESS: Admin only (user_type = 'admin')
  */
+ 
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
+
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
 
@@ -64,15 +66,15 @@ try {
 
     // Get totals
     $subtotal = floatval($_POST['subtotal'] ?? 0);
-    $tax      = floatval($_POST['tax'] ?? 0);
+    $tax      = floatval($_POST['tax']      ?? 0);
     $shipping = floatval($_POST['shipping'] ?? 0);
-    $total    = floatval($_POST['total'] ?? 0);
+    $total    = floatval($_POST['total']    ?? 0);
 
     // Start transaction
     $pdo->beginTransaction();
 
     // Decide order ID
-    $order_id_mode   = $_POST['order_id_mode'] ?? 'auto';
+    $order_id_mode   = $_POST['order_id_mode']   ?? 'auto';
     $manual_order_id = trim($_POST['manual_order_id'] ?? '');
 
     if ($order_id_mode === 'manual' && $manual_order_id !== '') {
@@ -112,7 +114,7 @@ try {
 
     $order_db_id = $pdo->lastInsertId();
 
-    // Insert order items
+    // Insert order items & update stock
     $item_stmt = $pdo->prepare(
         "INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal)
          VALUES (?, ?, ?, ?, ?, ?)"
@@ -124,14 +126,13 @@ try {
             $order_db_id, $item['id'], $item['name'],
             $item['quantity'], $item['price'], $item_subtotal
         ]);
-        // Update stock
         $stock_stmt = $pdo->prepare("UPDATE products SET quantity = quantity - ? WHERE id = ?");
         $stock_stmt->execute([$item['quantity'], $item['id']]);
     }
 
     $pdo->commit();
 
-    // Generate PDF
+    // Generate PDF and stream to browser
     require_once __DIR__ . '/../lib/pdf_generator.php';
     $pdf = new InvoicePDF();
 
@@ -155,7 +156,7 @@ try {
         'tax'              => $tax,
         'tax_rate'         => 6,
         'shipping'         => $shipping,
-        'total'            => $total
+        'total'            => $total,
     ];
 
     $filename = 'Invoice_' . $order_id . '_' . date('Ymd') . '.pdf';
@@ -169,4 +170,3 @@ try {
     header('Location: generate_invoice.php?error=' . urlencode($e->getMessage()));
     exit();
 }
-?>

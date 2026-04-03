@@ -82,11 +82,11 @@ $messages = get_messages();
                         <div class="navbar-nav ms-auto py-0">
                             <a href="index.php" class="nav-item nav-link">Home</a>
                             <a href="shop.php" class="nav-item nav-link">Shop</a>
+                            <a href="about.html" class="nav-item nav-link">About Us</a>
                             <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
                             <a href="cart.php" class="nav-item nav-link">Cart</a>
                             <a href="contact.php" class="nav-item nav-link active">Contact</a>
                         </div>
-                        <a href="#" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i class="fa fa-mobile-alt me-2"></i> +0123 456 7890</a>
                     </div>
                 </nav>
             </div>
@@ -248,8 +248,8 @@ $messages = get_messages();
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
                     <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="about.html">About Us</a>
-                    <a class="btn btn-link" href="contact.php">Contact Us</a>
+                    <a class="btn btn-link" href="about.html">About Us</a><br>
+                    <a class="btn btn-link" href="contact.php">Contact Us</a><br>
                     <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
@@ -260,7 +260,7 @@ $messages = get_messages();
                             placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
                         <button type="button"
                             class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
-                    </div>
+                    </div> 
                 </div>
             </div>
         </div>
@@ -269,9 +269,9 @@ $messages = get_messages();
                 <div class="text-center text-md-start mb-3 mb-md-0">
                     &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
                 </div>
-                <div class="text-center text-md-end">
+                <!-- <div class="text-center text-md-end">
                     Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
