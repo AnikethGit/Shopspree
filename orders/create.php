@@ -61,15 +61,16 @@ try {
 
     $stmt = $pdo->prepare(
         "INSERT INTO orders
-            (order_id, user_id, email, phone,
+            (order_id, user_id, customer_name, email, phone,
              shipping_address, shipping_city, shipping_state, shipping_postal_code,
              total_amount, payment_method, payment_status, transaction_id,
              payment_details, order_status, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
     );
     $stmt->execute([
         $order_id,
         $user_id,
+        sanitize($checkout_data['full_name']),
         sanitize($checkout_data['email']),
         sanitize($checkout_data['phone']),
         $shipping_address,
