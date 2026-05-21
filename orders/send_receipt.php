@@ -5,24 +5,29 @@
  */
 
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/helpers.php';
 
 function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_items, $totals, $payment_method, $shipping_address) {
-    // Email configuration
-    $to = $email;
-    $subject = "Order Confirmation - " . $order_id . " - Print Depot Co";
-    
+    // Escape all user-supplied values once before HTML interpolation
+    $s_order_id         = htmlspecialchars($order_id,         ENT_QUOTES, 'UTF-8');
+    $s_email            = htmlspecialchars($email,            ENT_QUOTES, 'UTF-8');
+    $s_phone            = htmlspecialchars($phone,            ENT_QUOTES, 'UTF-8');
+    $s_shipping_address = htmlspecialchars($shipping_address, ENT_QUOTES, 'UTF-8');
+    $s_payment_method   = htmlspecialchars($payment_method,   ENT_QUOTES, 'UTF-8');
+
+    $to      = $email;
+    $subject = "Order Confirmation - " . $s_order_id . " - Print Depot Co";
+
     // Build items list for email
-    $items_html = "";
+    $items_html  = '';
     $items_count = 0;
-    
+
     if (is_array($order_items)) {
         foreach ($order_items as $item) {
-            $item_name = htmlspecialchars($item['name'] ?? 'Unknown');
-            $item_qty = intval($item['quantity'] ?? 0);
-            $item_price = floatval($item['price'] ?? 0);
+            $item_name     = htmlspecialchars($item['name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8');
+            $item_qty      = intval($item['quantity'] ?? 0);
+            $item_price    = floatval($item['price'] ?? 0);
             $item_subtotal = $item_price * $item_qty;
-            
+
             $items_html .= "<tr style='border-bottom: 1px solid #ddd;'>
                 <td style='padding: 10px;'>{$item_name}</td>
                 <td style='padding: 10px; text-align: center;'>{$item_qty}</td>
@@ -32,10 +37,13 @@ function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_item
             $items_count++;
         }
     }
-    
-    // Build tracking URL
-    $tracking_url = 'https://' . $_SERVER['HTTP_HOST'] . '/orders/track.php?order_id=' . urlencode($order_id);
-    
+
+    // Build tracking URL (order_id is URL-encoded; no HTML escaping needed in href attr since we use s_order_id separately)
+    $tracking_url = htmlspecialchars(
+        'https://' . $_SERVER['HTTP_HOST'] . '/orders/track.php?order_id=' . rawurlencode($order_id),
+        ENT_QUOTES, 'UTF-8'
+    );
+
     // Build email HTML
     $html_message = "
     <html>
@@ -64,17 +72,17 @@ function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_item
                 <h1>Order Confirmation</h1>
                 <p style='margin: 5px 0;'>Thank you for your purchase!</p>
             </div>
-            
+
             <div class='content'>
                 <h2>Order Details</h2>
                 <div class='order-info'>
-                    <p><strong>Order ID:</strong> {$order_id}</p>
+                    <p><strong>Order ID:</strong> {$s_order_id}</p>
                     <p><strong>Order Date:</strong> " . date('F d, Y') . "</p>
-                    <p><strong>Email:</strong> {$email}</p>
-                    <p><strong>Phone:</strong> {$phone}</p>
-                    <p><strong>Shipping Address:</strong> {$shipping_address}</p>
+                    <p><strong>Email:</strong> {$s_email}</p>
+                    <p><strong>Phone:</strong> {$s_phone}</p>
+                    <p><strong>Shipping Address:</strong> {$s_shipping_address}</p>
                 </div>
-                
+
                 <h3>Items Ordered</h3>
                 <table class='items-table'>
                     <thead>
@@ -89,14 +97,14 @@ function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_item
                         {$items_html}
                     </tbody>
                 </table>
-                
+
                 <div class='totals'>
                     <div class='total-row'>
                         <span>Subtotal:</span>
                         <span>\$" . number_format($totals['subtotal'], 2) . "</span>
                     </div>
                     <div class='total-row'>
-                        <span>Tax (" . $totals['tax_rate'] . "%):</span>
+                        <span>Tax (" . number_format((float)$totals['tax_rate'], 1) . "%):</span>
                         <span>\$" . number_format($totals['tax'], 2) . "</span>
                     </div>
                     <div class='total-row'>
@@ -108,20 +116,20 @@ function send_order_receipt($order_id, $order_db_id, $email, $phone, $order_item
                         <span>\$" . number_format($totals['total'], 2) . "</span>
                     </div>
                 </div>
-                
-                <p><strong>Payment Method:</strong> {$payment_method}</p>
-                
+
+                <p><strong>Payment Method:</strong> {$s_payment_method}</p>
+
                 <div class='tracking-section'>
                     <h3 style='margin-top: 0;'>Track Your Order</h3>
                     <p>You can track your order status anytime using the link below:</p>
                     <a href='{$tracking_url}' class='tracking-link'>Track Order</a>
                 </div>
-                
-                <p style='color: #666; margin-top: 20px;'>If you have any questions about your order, please contact us at support@shopspree.com or call us at (012) 1234 567890.</p>
+
+                <p style='color: #666; margin-top: 20px;'>If you have any questions about your order, please contact us at " . htmlspecialchars(ADMIN_EMAIL, ENT_QUOTES, 'UTF-8') . ".</p>
             </div>
-            
+
             <div class='footer'>
-                <p>&copy; 2026 Print Depot Co. All rights reserved.</p>
+                <p>&copy; " . date('Y') . " " . htmlspecialchars(SITE_NAME, ENT_QUOTES, 'UTF-8') . ". All rights reserved.</p>
                 <p>This is an automated email. Please do not reply to this address.</p>
             </div>
         </div>

@@ -6,11 +6,7 @@
  * ACCESS: Admin only (user_type = 'admin')
  */
  
-ini_set('display_errors', '1');
-error_reporting(E_ALL);
-
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/helpers.php';
 
 // --- Admin Auth Guard ---
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {

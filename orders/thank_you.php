@@ -1,11 +1,6 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/helpers.php';
 
-// Check if there's a recent order
 if (empty($_SESSION['last_order_id'])) {
     redirect('index.php');
 }
@@ -13,70 +8,32 @@ if (empty($_SESSION['last_order_id'])) {
 $order_id = $_SESSION['last_order_id'];
 $order_db_id = $_SESSION['last_order_db_id'] ?? null;
 
-// Fetch order details
 $order = null;
 if (!is_null($order_db_id)) {
-    $query = "SELECT * FROM orders WHERE id = ?";
-    if ($stmt = $conn->prepare($query)) {
-        $stmt->bind_param("i", $order_db_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result && $result->num_rows > 0) {
-            $order = $result->fetch_assoc();
-        }
-        $stmt->close();
-    }
+    $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
+    $stmt->execute([$order_db_id]);
+    $order = $stmt->fetch() ?: null;
 }
 
 if (!$order) {
-    // Try to find by order_id
-    $query = "SELECT * FROM orders WHERE order_id = ?";
-    if ($stmt = $conn->prepare($query)) {
-        $stmt->bind_param("s", $order_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result && $result->num_rows > 0) {
-            $order = $result->fetch_assoc();
-        }
-        $stmt->close();
-    } else {
-        redirect('../index.php');
-    }
+    $stmt = $pdo->prepare("SELECT * FROM orders WHERE order_id = ?");
+    $stmt->execute([$order_id]);
+    $order = $stmt->fetch() ?: null;
 }
 
 if (!$order) {
     redirect('../index.php');
 }
 
-// Fetch order items
-$items = [];
-$items_query = "SELECT * FROM order_items WHERE order_id = ?";
-if ($stmt = $conn->prepare($items_query)) {
-    $stmt->bind_param("i", $order['id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($result && $row = $result->fetch_assoc()) {
-        $items[] = $row;
-    }
-    $stmt->close();
-}
+$stmt = $pdo->prepare("SELECT * FROM order_items WHERE order_id = ?");
+$stmt->execute([$order['id']]);
+$items = $stmt->fetchAll();
 
-// Clear session data
-unset($_SESSION['last_order_id']);
-unset($_SESSION['last_order_db_id']);
+unset($_SESSION['last_order_id'], $_SESSION['last_order_db_id']);
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmation - Print Depot Co</title>
-    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
-    <link href="../css/style.css" rel="stylesheet">
-    <style>
+$page_title   = 'Order Confirmed — PrintDepotCo';
+$meta_noindex = true;
+$extra_head   = '<style>
         .thank-you-container {
             max-width: 800px;
             margin: 50px auto;
@@ -183,30 +140,6 @@ unset($_SESSION['last_order_db_id']);
             justify-content: center;
             margin-top: 30px;
         }
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.3s;
-        }
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
         .status-badge {
             display: inline-block;
             padding: 5px 15px;
@@ -226,9 +159,9 @@ unset($_SESSION['last_order_db_id']);
             border-radius: 4px;
             color: #1565c0;
         }
-    </style>
-</head>
-<body>
+    </style>';
+require_once __DIR__ . '/../includes/header.php';
+?>
     <div class="container">
         <div class="thank-you-container">
             <!-- Success Message -->
@@ -328,6 +261,4 @@ unset($_SESSION['last_order_db_id']);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -1,110 +1,24 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/cart/get_cart.php';
 
 try {
-    require_once __DIR__ . '/config/db.php';
-    require_once __DIR__ . '/config/helpers.php';
-    
-    // Inline cart functions
-    function is_cart_empty() {
-        if (!isset($_SESSION['cart'])) {
-            return true;
-        }
-        return !is_array($_SESSION['cart']) || count($_SESSION['cart']) === 0;
-    }
-    
-    function get_cart_items() {
-        global $conn;
-        
-        if (!isset($_SESSION['cart'])) {
-            return [];
-        }
-        
-        if (!is_array($_SESSION['cart']) || count($_SESSION['cart']) === 0) {
-            return [];
-        }
-        
-        $cart_items = [];
-        
-        foreach ($_SESSION['cart'] as $product_id => $quantity) {
-            $product_id = intval($product_id);
-            $quantity = intval($quantity);
-            
-            if ($quantity <= 0 || $product_id <= 0) {
-                continue;
-            }
-            
-            $query = "SELECT id, name, price FROM products WHERE id = ?";
-            
-            if ($stmt = $conn->prepare($query)) {
-                $stmt->bind_param("i", $product_id);
-                
-                if ($stmt->execute()) {
-                    $result = $stmt->get_result();
-                    
-                    if ($result && $result->num_rows > 0) {
-                        $product = $result->fetch_assoc();
-                        
-                        $cart_items[] = [
-                            'id' => intval($product['id']),
-                            'name' => htmlspecialchars($product['name']),
-                            'price' => floatval($product['price']),
-                            'quantity' => $quantity
-                        ];
-                    }
-                }
-                
-                $stmt->close();
-            }
-        }
-        
-        return $cart_items;
-    }
-    
-    function calculate_cart_totals($cart_items, $tax_rate = 0.06, $shipping = 50) {
-        $subtotal = 0.0;
-        
-        if (is_array($cart_items)) {
-            foreach ($cart_items as $item) {
-                $price = isset($item['price']) ? floatval($item['price']) : 0;
-                $qty = isset($item['quantity']) ? intval($item['quantity']) : 0;
-                $subtotal += ($price * $qty);
-            }
-        }
-        
-        $subtotal = round($subtotal, 2);
-
-        // Apply shipping only for orders under $200
-        $effective_shipping = ($subtotal > 0 && $subtotal < 200) ? floatval($shipping) : 0.0;
-
-        $tax = round($subtotal * floatval($tax_rate), 2);
-        $total = round($subtotal + $tax + $effective_shipping, 2);
-        
-        return [
-            'subtotal' => $subtotal,
-            'tax' => $tax,
-            'tax_rate' => floatval($tax_rate) * 100,
-            'shipping' => $effective_shipping,
-            'total' => $total,
-            'item_count' => count($cart_items)
-        ];
-    }
-    
-    // Redirect to cart if empty
     if (is_cart_empty()) {
-        header('Location: cart.php');
-        exit;
+        redirect('cart.php');
     }
-    
-    $messages = get_messages();
+
+    $messages   = get_messages();
     $cart_items = get_cart_items();
-    $totals = calculate_cart_totals($cart_items, 0.06, 50);
+    $totals     = calculate_cart_totals($cart_items, TAX_RATE, STANDARD_SHIPPING);
     $cart_total = $totals['total'];
-    $user = current_user();
+    $user       = current_user();
 
     // Handle checkout submission: store in session then redirect to payment step
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['proceedToPayment'])) {
+        if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+            add_message('Invalid form submission. Please try again.', 'danger');
+            redirect('checkout.php');
+        }
         $checkout_data = [
             'full_name'      => sanitize($_POST['full_name'] ?? ''),
             'email'          => sanitize($_POST['email'] ?? ''),
@@ -126,126 +40,12 @@ try {
 } catch (Exception $e) {
     die('ERROR: ' . htmlspecialchars($e->getMessage()));
 }
+
+$page_title   = 'Checkout — PrintDepotCo';
+$active_nav   = 'checkout';
+$meta_noindex = true;
+require_once __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Checkout - PrintDepotCo</title>
-    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
-
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Libraries Stylesheet -->
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
-</head>
-<body>
-    <!-- Spinner Start -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-    <!-- Spinner End -->
-
-    <!-- Topbar Start -->
-    <div class="container-fluid px-5 d-none border-bottom d-lg-block">
-        <div class="row gx-0 align-items-center">
-            <div class="col-lg-4 text-center text-lg-start mb-lg-0">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="#" class="text-muted me-2"> Help</a><small> / </small>
-                    <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
-                    <a href="contact.php" class="text-muted ms-2"> Contact</a>
-                </div>
-            </div>
-            <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
-                <small class="text-dark">Call Us:</small>
-                <a href="#" class="text-muted">(+012) 1234 567890</a>
-            </div>
-            <div class="col-lg-4 text-center text-lg-end">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>USD</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Euro</a>
-                            <a href="#" class="dropdown-item"> Dolar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="container-fluid px-5 py-4 d-none d-lg-block">
-        <div class="row gx-0 align-items-center text-center">
-            <div class="col-md-4 col-lg-3 text-center text-lg-start">
-                <a href="index.php" class="navbar-brand p-0">
-                    <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
-                            style="height: 70px; width: auto; max-width: 100px;">
-                </a>
-            </div>
-            <div class="col-md-4 col-lg-6 text-center">
-                <div class="position-relative ps-4">
-                    <div class="d-flex border rounded-pill">
-                        <input class="form-control border-0 rounded-pill w-100 py-3" type="text" placeholder="Search Looking For?">
-                        <select class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
-                            <option value="All Category">All Category</option>
-                        </select>
-                        <button type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"><i class="fas fa-search"></i></button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-3 text-center text-lg-end">
-                <a href="cart.php" class="text-muted d-flex align-items-center justify-content-center"><span class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                    <span class="text-dark ms-2">$<?php echo number_format($cart_total, 2); ?></span></a>
-            </div>
-        </div>
-    </div>
-    <!-- Topbar End -->
-
-    <!-- Navbar & Hero Start -->
-    <div class="container-fluid nav-bar p-0">
-        <div class="row gx-0 bg-primary px-5 align-items-center">
-            <div class="col-12 col-lg-9 ms-auto">
-                <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-                    <a href="index.php" class="navbar-brand d-block d-lg-none">
-                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
-                            style="height: 70px; width: auto; max-width: 100px;">
-                    </a>
-                    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                        <span class="fa fa-bars fa-1x"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarCollapse">
-                        <div class="navbar-nav ms-auto py-0">
-                            <a href="index.php" class="nav-item nav-link">Home</a>
-                            <a href="shop.php" class="nav-item nav-link">Shop</a>
-                            <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
-                            <a href="cart.php" class="nav-item nav-link">Cart</a>
-                            <a href="checkout.php" class="nav-item nav-link active">Checkout</a>
-                            <a href="contact.php" class="nav-item nav-link">Contact</a>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </div>
-    <!-- Navbar & Hero End -->
 
     <!-- Single Page Header start -->
     <div class="container-fluid page-header py-5">
@@ -267,6 +67,7 @@ try {
                 <div class="col-md-12 col-lg-8">
                     <!-- Checkout Form -->
                     <form method="post" action="checkout.php" id="checkoutForm">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token()); ?>">
                         <h5 class="mb-4">Billing Details</h5>
                         <div class="row g-3">
                             <div class="col-md-12">
@@ -442,72 +243,26 @@ try {
     </div>
     <!-- Checkout Page End -->
     
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-light footer pt-5">
-        <div class="container py-5">
-            <div class="row g-5">
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.1s">
-                    <h5 class="text-light mb-4">Why Choose Us</h5>
-                    <p class="mb-4">We provide high-performance printing solutions and expert support to maximize your efficiency and lower your long-term costs.</p>
-                    <div class="d-flex align-items-center">
-                        <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="">
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
-                    <h5 class="text-light mb-4">Address</h5>
-                    <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                    <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                    <p><i class="fa fa-envelope me-3"></i>info@printdepotco.com</p>
-                    <div class="d-flex pt-2">
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-youtube"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i
-                                class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
-                    <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="about.html">About Us</a><br>
-                    <a class="btn btn-link" href="contact.php">Contact Us</a><br>
-                    <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
-                    <h5 class="text-light mb-4">Newsletter</h5>
-                    <p>Sign up for our newsletter</p>
-                    <div class="position-relative w-100 mt-3">
-                        <input class="form-control border-light w-100 py-2 ps-4 pe-5" type="text"
-                            placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
-                        <button type="button"
-                            class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
-                    </div> 
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid copyright">
-            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-                <div class="text-center text-md-start mb-3 mb-md-0">
-                    &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
-                </div>
-                <!-- <div class="text-center text-md-end">
-                    Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
-                </div> -->
-            </div>
-        </div>
-    </div>
-    <!-- Footer End -->
-
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-primary btn-lg-square back-to-top"><i class="fa fa-arrow-up"></i></a>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="js/main.js"></script>
-</body>
-</html>
+<?php
+$extra_foot = <<<'JS'
+<script>
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    var errors = [];
+    var email = document.querySelector('[name=email]').value.trim();
+    var phone = document.querySelector('[name=phone]').value.trim();
+    var postal = document.querySelector('[name=postal_code]').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Please enter a valid email address.');
+    if (phone && !/^[\d\+\-\(\)\s]{7,}$/.test(phone)) errors.push('Please enter a valid phone number.');
+    if (postal && !/^[A-Za-z0-9\s\-]{3,10}$/.test(postal)) errors.push('Please enter a valid postal code.');
+    if (errors.length) {
+        e.preventDefault();
+        var div = document.getElementById('checkout-errors');
+        if (!div) { div = document.createElement('div'); div.id = 'checkout-errors'; div.className = 'alert alert-danger'; document.getElementById('checkoutForm').prepend(div); }
+        div.innerHTML = errors.join('<br>');
+        div.scrollIntoView({behavior:'smooth'});
+    }
+});
+</script>
+JS;
+require_once __DIR__ . '/includes/footer.php';
+?>

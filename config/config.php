@@ -1,102 +1,127 @@
 <?php
-/**
- * Global Configuration File
- * config/config.php
- */
+// ── Site constants ─────────────────────────────────────────────────────────
+define('SITE_NAME',              'PrintDepotCo');
+define('SITE_URL',               rtrim(getenv('SITE_URL') ?: 'https://printdepotco.com/', '/') . '/');
+define('SITE_EMAIL',             'noreply@printdepotco.com');
+define('SITE_PHONE',             '+1-234-567-8900');
+define('ADMIN_EMAIL',            getenv('ADMIN_EMAIL') ?: 'admin@printdepotco.com');
 
-// Site Configuration
-define('SITE_NAME', 'PrintDepotCo');
-define('SITE_URL', 'https://printdepotco.com/');  // Change in production
-define('SITE_EMAIL', 'noreply@printdepotco.com');
-define('SITE_PHONE', '+1-234-567-8900');
+define('CURRENCY',               'USD');
+define('CURRENCY_SYMBOL',        '$');
 
-// Currency
-define('CURRENCY', 'USD');
-define('CURRENCY_SYMBOL', '$');
+define('ITEMS_PER_PAGE',         12);
 
-// Pagination
-define('ITEMS_PER_PAGE', 12);
+define('MAX_FILE_SIZE',          5 * 1024 * 1024);
+define('ALLOWED_IMAGE_TYPES',    ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+define('UPLOAD_DIR',             $_SERVER['DOCUMENT_ROOT'] . '/img/uploads/');
 
-// File Upload Settings
-define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
-define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-define('UPLOAD_DIR', $_SERVER['DOCUMENT_ROOT'] . '/img/uploads/');
+define('MAIL_FROM',              'noreply@printdepotco.com');
+define('MAIL_FROM_NAME',         'PrintDepotCo');
 
-// Email Configuration (Using PHP mail())
-define('MAIL_FROM', 'noreply@printdepotco.com');
-define('MAIL_FROM_NAME', 'PrintDepotCo');
-
-// Admin Settings
-define('ADMIN_EMAIL', 'admin@printdepotco.com');
-
-// Shipping Cost
-define('STANDARD_SHIPPING', 10.00);
-define('EXPRESS_SHIPPING', 20.00);
+define('STANDARD_SHIPPING',      10.00);
+define('EXPRESS_SHIPPING',       20.00);
 define('FREE_SHIPPING_THRESHOLD', 100.00);
+define('TAX_RATE',               0.06);
 
-// Tax Rate (6%)
-define('TAX_RATE', 0.06);
+// ── Error reporting ─────────────────────────────────────────────────────────
+if (getenv('APP_ENV') === 'development') {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0);
+    error_reporting(0);
+    ini_set('log_errors', 1);
+}
 
-// Session Configuration
+// ── Session ─────────────────────────────────────────────────────────────────
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_samesite', 'Lax');
 
-// Start Session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Error Reporting (disable in production)
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// ── Input / output helpers ───────────────────────────────────────────────────
+function sanitize($input) {
+    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+}
 
-// Function to sanitize input
+// Alias kept for any existing callers
 function sanitize_input($data) {
-    return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+    return sanitize($data);
 }
 
-// Function to validate email
 function is_valid_email($email) {
-    return filter_var($email, FILTER_VALIDATE_EMAIL);
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
-// Function to hash password
-function hash_password($password) {
-    return password_hash($password, PASSWORD_DEFAULT);
+function format_price($price) {
+    return CURRENCY_SYMBOL . number_format((float)$price, 2, '.', ',');
 }
 
-// Function to verify password
-function verify_password($password, $hash) {
-    return password_verify($password, $hash);
+function format_date($date) {
+    return date('M d, Y', strtotime($date));
 }
 
-// Function to redirect
 function redirect($url) {
     header('Location: ' . $url);
     exit();
 }
 
-// Function to check if user is logged in
-function is_logged_in() {
-    return isset($_SESSION['user_id']);
+// ── Flash messages ───────────────────────────────────────────────────────────
+function add_message($message, $type = 'info') {
+    if (!isset($_SESSION['messages'])) {
+        $_SESSION['messages'] = [];
+    }
+    $_SESSION['messages'][] = ['text' => $message, 'type' => $type];
 }
 
-// Function to check if user is admin
+function get_messages() {
+    $messages = $_SESSION['messages'] ?? [];
+    unset($_SESSION['messages']);
+    return $messages;
+}
+
+function display_error($message) {
+    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">'
+        . htmlspecialchars($message)
+        . '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+}
+
+function display_success($message) {
+    echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
+        . htmlspecialchars($message)
+        . '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+}
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+function is_logged_in() {
+    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+}
+
 function is_admin() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 }
 
-// Function to generate unique order number
-function generate_order_number() {
-    return 'ORD-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
+function current_user() {
+    return is_logged_in() ? ($_SESSION['user'] ?? null) : null;
 }
 
-// Function to format price
-function format_price($price) {
-    return CURRENCY_SYMBOL . number_format($price, 2, '.', ',');
+function get_user_identifier() {
+    return is_logged_in() ? $_SESSION['user_id'] : session_id();
 }
 
-// CSRF Token Generation & Validation
+// ── Password ─────────────────────────────────────────────────────────────────
+function hash_password($password) {
+    return password_hash($password, PASSWORD_DEFAULT);
+}
+
+function verify_password($password, $hash) {
+    return password_verify($password, $hash);
+}
+
+// ── CSRF ─────────────────────────────────────────────────────────────────────
 function generate_csrf_token() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -105,59 +130,53 @@ function generate_csrf_token() {
 }
 
 function verify_csrf_token($token) {
-    return hash_equals($_SESSION['csrf_token'] ?? '', $token);
+    return isset($_SESSION['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-// Function to display error messages
-function display_error($message) {
-    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
-    echo htmlspecialchars($message);
-    echo '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-    echo '</div>';
+// ── Order helpers ────────────────────────────────────────────────────────────
+function generate_order_number() {
+    return 'ORD-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
 }
 
-// Function to display success messages
-function display_success($message) {
-    echo '<div class="alert alert-success alert-dismissible fade show" role="alert">';
-    echo htmlspecialchars($message);
-    echo '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-    echo '</div>';
+// Alias kept for existing callers
+function generate_order_id() {
+    return generate_order_number();
 }
 
-// Function to get user info by ID
-function get_user($user_id, $conn) {
-    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc();
+// ── Pagination ───────────────────────────────────────────────────────────────
+function get_page_number() {
+    return max(1, (int)($_GET['page'] ?? 1));
 }
 
-// Function to get product by ID
-function get_product($product_id, $conn) {
-    $stmt = $conn->prepare("SELECT * FROM products WHERE id = ? AND is_active = TRUE");
-    $stmt->bind_param("i", $product_id);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc();
+function build_query($params) {
+    return http_build_query(array_filter($params));
 }
 
-// Function to get category by ID
-function get_category($category_id, $conn) {
-    $stmt = $conn->prepare("SELECT * FROM categories WHERE id = ?");
-    $stmt->bind_param("i", $category_id);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc();
+// ── Database query helpers (use global $pdo) ─────────────────────────────────
+function get_user($user_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    return $stmt->fetch() ?: null;
 }
 
-// Function to get all categories
-function get_all_categories($conn) {
-    $result = $conn->query("SELECT * FROM categories ORDER BY name");
-    return $result->fetch_all(MYSQLI_ASSOC);
+function get_product($product_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ? AND is_active = 1");
+    $stmt->execute([$product_id]);
+    return $stmt->fetch() ?: null;
 }
 
-// Function to log user activity (optional)
-function log_activity($user_id, $action, $conn) {
-    // You can extend this to track user actions
-    // For now, it's a placeholder
+function get_category($category_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM categories WHERE id = ?");
+    $stmt->execute([$category_id]);
+    return $stmt->fetch() ?: null;
 }
 
-?>
+function get_all_categories() {
+    global $pdo;
+    return $pdo->query("SELECT * FROM categories WHERE is_active = 1 ORDER BY display_order ASC, name ASC")
+               ->fetchAll();
+}

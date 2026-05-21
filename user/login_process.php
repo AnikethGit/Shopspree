@@ -1,104 +1,104 @@
 <?php
-/**
- * User Login Handler
- * user/login_process.php
- */
+require_once __DIR__ . '/../config/db.php';
 
-session_start();
+$response = ['success' => false, 'message' => '', 'errors' => []];
 
-require_once '../config/database.php';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    redirect('../index.php');
+}
 
-$response = [
-    'success' => false,
-    'message' => '',
-    'errors' => []
-];
+// ── Session-based login rate limiting ──────────────────────────────────────
+$_SESSION['login_attempts']     = $_SESSION['login_attempts']     ?? 0;
+$_SESSION['login_last_attempt'] = $_SESSION['login_last_attempt'] ?? 0;
+$max_attempts = 5;
+$lockout_secs = 900; // 15 minutes
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    $email    = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-
-    $errors = [];
-
-    if (empty($email)) {
-        $errors['email'] = 'Email is required';
-    }
-    if (empty($password)) {
-        $errors['password'] = 'Password is required';
-    }
-
-    if (empty($errors)) {
-
-        // Select using actual DB columns: full_name, user_type, is_active
-        $stmt = $conn->prepare(
-            'SELECT id, full_name, email, password, user_type FROM users WHERE email = ? AND is_active = 1'
-        );
-        $stmt->bind_param('s', $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $user = $result->fetch_assoc();
-
-            if (password_verify($password, $user['password'])) {
-
-                $user_id = $user['id'];
-
-                // Link any guest orders placed with this email to this account
-                $link_stmt = $conn->prepare(
-                    'UPDATE orders SET user_id = ? WHERE email = ? AND (user_id IS NULL OR user_id = 0)'
-                );
-                $link_stmt->bind_param('is', $user_id, $email);
-                $link_stmt->execute();
-                $link_stmt->close();
-
-                // Split full_name for display
-                $name_parts = explode(' ', $user['full_name'], 2);
-                $first_name = $name_parts[0];
-                $last_name  = $name_parts[1] ?? '';
-
-                // Set session variables
-                $_SESSION['user_id']    = $user_id;
-                $_SESSION['full_name']  = $user['full_name'];
-                $_SESSION['first_name'] = $first_name;
-                $_SESSION['last_name']  = $last_name;
-                $_SESSION['email']      = $user['email'];
-                $_SESSION['role']       = $user['user_type'];
-
-                $response['success'] = true;
-                $response['message'] = 'Login successful!';
-
-            } else {
-                $errors['password'] = 'Incorrect password';
-            }
-        } else {
-            $errors['email'] = 'Email not found or account inactive';
+if ($_SESSION['login_attempts'] >= $max_attempts) {
+    $elapsed = time() - $_SESSION['login_last_attempt'];
+    if ($elapsed < $lockout_secs) {
+        $mins_left = (int)ceil(($lockout_secs - $elapsed) / 60);
+        $msg = "Too many failed login attempts. Please try again in {$mins_left} minute(s).";
+        $is_ajax_rl = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        if ($is_ajax_rl) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $msg, 'errors' => ['auth' => $msg]]);
+            exit;
         }
-
-        $stmt->close();
+        add_message($msg, 'error');
+        redirect('login.php?error=1');
     }
+    $_SESSION['login_attempts'] = 0; // lockout expired — reset
+}
+// ───────────────────────────────────────────────────────────────────────────
 
-    if (!empty($errors)) {
-        $response['errors'] = $errors;
-        $response['message'] = 'Login failed. Please check your credentials.';
-    }
+$email    = trim($_POST['email'] ?? '');
+$password = $_POST['password'] ?? '';
+$errors   = [];
 
-    // AJAX response
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-        strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-        header('Content-Type: application/json');
-        echo json_encode($response);
-        exit;
+if (empty($email)) {
+    $errors['email'] = 'Email is required';
+}
+if (empty($password)) {
+    $errors['password'] = 'Password is required';
+}
+
+if (empty($errors)) {
+    $stmt = $pdo->prepare(
+        'SELECT id, full_name, email, password, user_type FROM users WHERE email = ? AND is_active = 1'
+    );
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['password'])) {
+        $user_id = $user['id'];
+
+        // Prevent session fixation on privilege change
+        session_regenerate_id(true);
+
+        // Link any guest orders placed with this email
+        $pdo->prepare('UPDATE orders SET user_id = ? WHERE email = ? AND (user_id IS NULL OR user_id = 0)')
+            ->execute([$user_id, $email]);
+
+        $name_parts = explode(' ', $user['full_name'], 2);
+
+        $_SESSION['user_id']    = $user_id;
+        $_SESSION['full_name']  = $user['full_name'];
+        $_SESSION['first_name'] = $name_parts[0];
+        $_SESSION['last_name']  = $name_parts[1] ?? '';
+        $_SESSION['email']      = $user['email'];
+        $_SESSION['role']       = $user['user_type'];
+
+        // Reset rate limiting on success
+        $_SESSION['login_attempts'] = 0;
+
+        $response['success'] = true;
+        $response['message'] = 'Login successful!';
+    } else {
+        // Track failed attempt
+        $_SESSION['login_attempts']++;
+        $_SESSION['login_last_attempt'] = time();
+
+        $errors['auth'] = 'Invalid email or password.';
+        $response['message'] = 'Invalid email or password.';
     }
 }
 
-$conn->close();
+if (!empty($errors)) {
+    $response['errors'] = $errors;
+}
+
+$is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+    && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+if ($is_ajax) {
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
 
 if ($response['success']) {
-    header('Location: ../index.php');
+    redirect('../index.php');
 } else {
-    header('Location: login.php?error=1');
+    redirect('login.php?error=1');
 }
-exit;
-?>

@@ -1,154 +1,123 @@
 <?php
-/**
- * Cart Handler
- * Manages shopping cart operations in SESSION
- */
-
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/helpers.php';
 
 /**
- * Add product to cart (SESSION-based)
- * @param int $product_id
- * @param int $quantity
- * @return array Success or error details
+ * Get or create a unique cart token for this visitor.
+ * Stored in the session (fast path) and a 30-day cookie (cross-session persistence).
  */
-function add_to_cart($product_id, $quantity = 1) {
-    global $conn;
-    
-    $product_id = intval($product_id);
-    $quantity = intval($quantity);
-    
+function get_cart_token(): string {
+    if (!empty($_SESSION['cart_token']) && preg_match('/^[0-9a-f]{64}$/', $_SESSION['cart_token'])) {
+        return $_SESSION['cart_token'];
+    }
+    if (!empty($_COOKIE['cart_token']) && preg_match('/^[0-9a-f]{64}$/', $_COOKIE['cart_token'])) {
+        $_SESSION['cart_token'] = $_COOKIE['cart_token'];
+        return $_SESSION['cart_token'];
+    }
+    $token = bin2hex(random_bytes(32));
+    $_SESSION['cart_token'] = $token;
+    setcookie('cart_token', $token, [
+        'expires'  => time() + 30 * 24 * 3600,
+        'path'     => '/',
+        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    return $token;
+}
+
+function add_to_cart(int $product_id, int $quantity = 1): array {
+    global $pdo;
+
     if ($product_id <= 0 || $quantity <= 0) {
         return ['success' => false, 'message' => 'Invalid product ID or quantity'];
     }
-    
-    // Initialize SESSION cart if not exists
-    if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
+
+    $stmt = $pdo->prepare("SELECT id, name, quantity FROM products WHERE id = ? AND is_active = 1");
+    $stmt->execute([$product_id]);
+    $product = $stmt->fetch();
+
+    if (!$product) {
+        return ['success' => false, 'message' => 'Product not found'];
     }
-    
-    // Check if product exists and has stock
-    if ($stmt = $conn->prepare("SELECT id, name, quantity, price FROM products WHERE id = ?")) {
-        $stmt->bind_param("i", $product_id);
-        if ($stmt->execute()) {
-            $result = $stmt->get_result();
-            if ($result && $result->num_rows > 0) {
-                $product = $result->fetch_assoc();
-                
-                // Check stock
-                if (intval($product['quantity']) < $quantity) {
-                    $stmt->close();
-                    return ['success' => false, 'message' => 'Insufficient stock available. Only ' . $product['quantity'] . ' available.'];
-                }
-                
-                // Add to session cart
-                if (!isset($_SESSION['cart'][$product_id])) {
-                    $_SESSION['cart'][$product_id] = 0;
-                }
-                $_SESSION['cart'][$product_id] += $quantity;
-                
-                $stmt->close();
-                add_message($product['name'] . ' added to cart', 'success');
-                return ['success' => true, 'message' => 'Product added to cart'];
-            } else {
-                $stmt->close();
-                return ['success' => false, 'message' => 'Product not found'];
-            }
-        }
-        $stmt->close();
+
+    $token = get_cart_token();
+
+    // How many units are already in the cart?
+    $stmt = $pdo->prepare("SELECT quantity FROM cart_items WHERE cart_token = ? AND product_id = ?");
+    $stmt->execute([$token, $product_id]);
+    $existing = (int)($stmt->fetchColumn() ?: 0);
+
+    $new_qty = $existing + $quantity;
+    if ($new_qty > (int)$product['quantity']) {
+        return ['success' => false, 'message' => 'Insufficient stock. Only ' . $product['quantity'] . ' available.'];
     }
-    
-    return ['success' => false, 'message' => 'Error adding to cart'];
+
+    $pdo->prepare(
+        "INSERT INTO cart_items (cart_token, product_id, quantity)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE quantity = VALUES(quantity), updated_at = NOW()"
+    )->execute([$token, $product_id, $new_qty]);
+
+    add_message(htmlspecialchars($product['name']) . ' added to cart', 'success');
+    return ['success' => true, 'message' => 'Product added to cart'];
 }
 
-/**
- * Update cart item quantity (SESSION-based)
- * @param int $product_id
- * @param int $quantity
- * @return bool
- */
-function update_cart_quantity($product_id, $quantity) {
-    global $conn;
-    
-    $product_id = intval($product_id);
-    $quantity = intval($quantity);
-    
+function update_cart_quantity(int $product_id, int $quantity): bool {
+    global $pdo;
+
     if ($quantity <= 0) {
         return remove_from_cart($product_id);
     }
-    
-    if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart']) || !isset($_SESSION['cart'][$product_id])) {
+
+    $stmt = $pdo->prepare("SELECT quantity FROM products WHERE id = ? AND is_active = 1");
+    $stmt->execute([$product_id]);
+    $product = $stmt->fetch();
+    if (!$product || (int)$product['quantity'] < $quantity) {
         return false;
     }
-    
-    // Check stock before updating
-    if ($stmt = $conn->prepare("SELECT quantity FROM products WHERE id = ?")) {
-        $stmt->bind_param("i", $product_id);
-        if ($stmt->execute()) {
-            $result = $stmt->get_result();
-            if ($result && $result->num_rows > 0) {
-                $product = $result->fetch_assoc();
-                $available = intval($product['quantity']);
-                
-                if ($available < $quantity) {
-                    $stmt->close();
-                    return false;
-                }
-                
-                $_SESSION['cart'][$product_id] = $quantity;
-                $stmt->close();
-                return true;
-            }
-        }
-        $stmt->close();
-    }
-    
-    return false;
-}
 
-/**
- * Remove item from cart (SESSION-based)
- * @param int $product_id
- * @return bool
- */
-function remove_from_cart($product_id) {
-    $product_id = intval($product_id);
-    
-    if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-        if (isset($_SESSION['cart'][$product_id])) {
-            unset($_SESSION['cart'][$product_id]);
-            return true;
-        }
-    }
-    
-    return false;
-}
+    $token = get_cart_token();
+    $pdo->prepare(
+        "UPDATE cart_items SET quantity = ?, updated_at = NOW()
+         WHERE cart_token = ? AND product_id = ?"
+    )->execute([$quantity, $token, $product_id]);
 
-/**
- * Clear entire cart for user/session
- * @return bool
- */
-function clear_cart() {
-    $_SESSION['cart'] = [];
     return true;
 }
 
-/**
- * Get cart count (total items)
- * @return int
- */
-function get_cart_count() {
-    if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
-        return 0;
-    }
-    
-    $count = 0;
-    foreach ($_SESSION['cart'] as $qty) {
-        $count += intval($qty);
-    }
-    
-    return $count;
+function remove_from_cart(int $product_id): bool {
+    global $pdo;
+    $token = get_cart_token();
+    $stmt  = $pdo->prepare("DELETE FROM cart_items WHERE cart_token = ? AND product_id = ?");
+    $stmt->execute([$token, $product_id]);
+    return $stmt->rowCount() > 0;
 }
 
-?>
+function clear_cart(): bool {
+    global $pdo;
+    if (empty($_SESSION['cart_token']) && empty($_COOKIE['cart_token'])) {
+        return true;
+    }
+    $token = get_cart_token();
+    $pdo->prepare("DELETE FROM cart_items WHERE cart_token = ?")->execute([$token]);
+    // Expire session token and cookie so a fresh token is generated next visit
+    unset($_SESSION['cart_token']);
+    setcookie('cart_token', '', [
+        'expires'  => time() - 3600,
+        'path'     => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    return true;
+}
+
+function get_cart_count(): int {
+    global $pdo;
+    if (empty($_SESSION['cart_token']) && empty($_COOKIE['cart_token'])) {
+        return 0;
+    }
+    $token = get_cart_token();
+    $stmt  = $pdo->prepare("SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE cart_token = ?");
+    $stmt->execute([$token]);
+    return (int)$stmt->fetchColumn();
+}

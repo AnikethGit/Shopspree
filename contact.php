@@ -1,97 +1,12 @@
 <?php
-require_once __DIR__ . '/config/helpers.php';
+require_once __DIR__ . '/config/db.php';
 $messages = get_messages();
+
+$page_title       = 'Contact Us — PrintDepotCo';
+$active_nav       = 'contact';
+$meta_description = 'Get in touch with Print Depot Co. We\'re here to help with your printing needs.';
+require_once __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Contact Us - PrintDepotCo</title>
-    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-</head>
-<body>
-    <!-- Spinner -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-
-    <!-- Topbar -->
-    <div class="container-fluid px-5 d-none border-bottom d-lg-block">
-        <div class="row gx-0 align-items-center">
-            <div class="col-lg-4 text-center text-lg-start mb-lg-0">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="contact.php" class="text-muted ms-2">Contact</a>
-                </div>
-            </div>
-            <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
-                <small class="text-dark">Call Us:</small>
-                <a href="#" class="text-muted">(+012) 1234 567890</a>
-            </div>
-            <div class="col-lg-4 text-center text-lg-end">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>USD</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item">Euro</a>
-                            <a href="#" class="dropdown-item">Dollar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container-fluid px-5 py-4 d-none d-lg-block">
-        <div class="row gx-0 align-items-center text-center">
-            <div class="col-md-4 col-lg-3 text-center text-lg-start">
-                <div class="d-inline-flex align-items-center">
-                    <a href="index.php" class="navbar-brand p-0">
-                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
-                            style="height: 70px; width: auto; max-width: 100px;">
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Navbar -->
-    <div class="container-fluid nav-bar p-0">
-        <div class="row gx-0 bg-primary px-5 align-items-center">
-            <div class="col-12">
-                <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-                    <a href="index.php" class="navbar-brand d-block d-lg-none">
-                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
-                            style="height: 70px; width: auto; max-width: 100px;">
-                    </a>
-                    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                        <span class="fa fa-bars fa-1x"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarCollapse">
-                        <div class="navbar-nav ms-auto py-0">
-                            <a href="index.php" class="nav-item nav-link">Home</a>
-                            <a href="shop.php" class="nav-item nav-link">Shop</a>
-                            <a href="about.html" class="nav-item nav-link">About Us</a>
-                            <a href="orders/track.php" class="nav-item nav-link">Track My Order</a>
-                            <a href="cart.php" class="nav-item nav-link">Cart</a>
-                            <a href="contact.php" class="nav-item nav-link active">Contact</a>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </div>
 
     <!-- Page Header -->
     <div class="container-fluid page-header py-5">
@@ -128,6 +43,7 @@ $messages = get_messages();
                         <h1 class="display-5 mb-4">Send Your Message</h1>
                         <p class="mb-4">Have a question or feedback? Fill out the form below and we'll get back to you as soon as possible.</p>
                         <form method="post" action="contact_handler.php">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token()); ?>">
                             <div class="row g-4">
                                 <div class="col-lg-12 col-xl-6">
                                     <div class="form-floating">
@@ -219,70 +135,4 @@ $messages = get_messages();
         </div>
     </div>
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-light footer pt-5">
-        <div class="container py-5">
-            <div class="row g-5">
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.1s">
-                    <h5 class="text-light mb-4">Why Choose Us</h5>
-                    <p class="mb-4">We provide high-performance printing solutions and expert support to maximize your efficiency and lower your long-term costs.</p>
-                    <div class="d-flex align-items-center">
-                        <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="">
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
-                    <h5 class="text-light mb-4">Address</h5>
-                    <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                    <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                    <p><i class="fa fa-envelope me-3"></i>info@printdepotco.com</p>
-                    <div class="d-flex pt-2">
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-youtube"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i
-                                class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
-                    <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="about.html">About Us</a><br>
-                    <a class="btn btn-link" href="contact.php">Contact Us</a><br>
-                    <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
-                    <h5 class="text-light mb-4">Newsletter</h5>
-                    <p>Sign up for our newsletter</p>
-                    <div class="position-relative w-100 mt-3">
-                        <input class="form-control border-light w-100 py-2 ps-4 pe-5" type="text"
-                            placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
-                        <button type="button"
-                            class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
-                    </div> 
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid copyright">
-            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-                <div class="text-center text-md-start mb-3 mb-md-0">
-                    &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
-                </div>
-                <!-- <div class="text-center text-md-end">
-                    Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
-                </div> -->
-            </div>
-        </div>
-    </div>
-    <!-- Footer End -->
-
-    <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="js/main.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

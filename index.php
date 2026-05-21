@@ -1,371 +1,76 @@
 <?php
-// Include database configuration
 require_once 'config/db.php';
-// Session is already started in db.php (guarded), don't start it again!
+require_once 'cart/cart_handler.php';
 
-// Initialize cart if not exists
-if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = array();
-}
-
-// Handle Add to Cart BEFORE ANY OUTPUT (but NO redirect)
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
-    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-    $qty = isset($_POST['qty']) ? intval($_POST['qty']) : 1;
-    
+// Handle add-to-cart POST without redirect (cart icon updates in place)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
+    $product_id = intval($_POST['product_id'] ?? 0);
+    $qty        = intval($_POST['qty'] ?? 1);
     if ($product_id > 0 && $qty > 0) {
-        if (!isset($_SESSION['cart'][$product_id])) {
-            $_SESSION['cart'][$product_id] = 0;
-        }
-        $_SESSION['cart'][$product_id] += $qty;
+        add_to_cart($product_id, $qty);
     }
-    // Don't redirect - let the page continue loading so cart icon updates
 }
 
-// Fetch categories from database and store in array (not result set)
-$categories_array = array();
-if ($stmt = $conn->prepare("SELECT categories.id, categories.name, COUNT(*) as count FROM categories LEFT JOIN products ON categories.id = products.category_id GROUP BY categories.id LIMIT 5")) {
-    if ($stmt->execute()) {
-        $categories_result = $stmt->get_result();
-        // Store results in array for reuse
-        while($row = $categories_result->fetch_assoc()) {
-            $categories_array[] = $row;
-        }
-    } else {
-        error_log("Categories query execute error: " . $stmt->error);
-    }
-    $stmt->close();
-} else {
-    error_log("Categories query prepare error: " . $conn->error);
-}
+// Categories
+$stmt = $pdo->query(
+    "SELECT c.id, c.name, COUNT(p.id) as count
+     FROM categories c LEFT JOIN products p ON c.id = p.category_id
+     GROUP BY c.id LIMIT 5"
+);
+$categories_array = $stmt->fetchAll();
 
-// Fetch featured products
-$featured_result = null;
-if ($stmt = $conn->prepare("SELECT * FROM products WHERE featured = 1 LIMIT 4")) {
-    if ($stmt->execute()) {
-        $featured_result = $stmt->get_result();
-    } else {
-        error_log("Featured products query execute error: " . $stmt->error);
-    }
-    $stmt->close();
-}
+// Featured products
+$stmt = $pdo->prepare("SELECT * FROM products WHERE featured = 1 AND is_active = 1 LIMIT 4");
+$stmt->execute();
+$featured_result = $stmt->fetchAll();
 
-// Fetch all products for main tab
-$all_products_result = null;
-if ($stmt = $conn->prepare("SELECT * FROM products LIMIT 12")) {
-    if ($stmt->execute()) {
-        $all_products_result = $stmt->get_result();
-    } else {
-        error_log("All products query execute error: " . $stmt->error);
-    }
-    $stmt->close();
-}
+// All products
+$stmt = $pdo->prepare("SELECT * FROM products WHERE is_active = 1 LIMIT 12");
+$stmt->execute();
+$all_products_result = $stmt->fetchAll();
 
-// Fetch new arrivals - try different possible column names
-$new_result = null;
-
-// List of possible column names for "new" products
-$new_columns = ['is_new', 'new_product', 'isnew', 'product_new'];
+// New arrivals — detect column, fallback to latest by created_at
 $new_column_found = null;
-
-// Test which column exists
-foreach ($new_columns as $col) {
-    // Use INFORMATION_SCHEMA to check if column exists
-    $check_sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-                  WHERE TABLE_NAME = 'products' AND COLUMN_NAME = ?";
-    if ($check_stmt = $conn->prepare($check_sql)) {
-        $check_stmt->bind_param("s", $col);
-        if ($check_stmt->execute()) {
-            $check_result = $check_stmt->get_result();
-            if ($check_result->num_rows > 0) {
-                $new_column_found = $col;
-                $check_stmt->close();
-                break;
-            }
-        }
-        $check_stmt->close();
-    }
+foreach (['is_new', 'new_product', 'isnew', 'product_new'] as $col) {
+    $chk = $pdo->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = ?"
+    );
+    $chk->execute([$col]);
+    if ($chk->fetchColumn()) { $new_column_found = $col; break; }
 }
-
-// If column found, use it; otherwise get recent products
 if ($new_column_found) {
-    // Build query with the actual column name
-    $new_query = "SELECT * FROM products WHERE " . $new_column_found . " = 1 LIMIT 12";
-    if ($stmt = $conn->prepare($new_query)) {
-        if ($stmt->execute()) {
-            $new_result = $stmt->get_result();
-        } else {
-            error_log("New arrivals query execute error: " . $stmt->error);
-        }
-        $stmt->close();
-    }
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE `$new_column_found` = 1 AND is_active = 1 LIMIT 12");
 } else {
-    // Fallback: get recent products by ID
-    if ($stmt = $conn->prepare("SELECT * FROM products ORDER BY id DESC LIMIT 12")) {
-        if ($stmt->execute()) {
-            $new_result = $stmt->get_result();
-        } else {
-            error_log("New arrivals fallback query execute error: " . $stmt->error);
-        }
-        $stmt->close();
-    }
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC LIMIT 12");
 }
+$stmt->execute();
+$new_result = $stmt->fetchAll();
 
-// Fetch top selling products - try different column names
-$top_result = null;
-
-// List of possible column names for "top selling" products
-$top_columns = ['top_selling', 'bestseller', 'is_bestseller', 'topselling'];
+// Top selling — detect column, fallback to random
 $top_column_found = null;
-
-// Test which column exists
-foreach ($top_columns as $col) {
-    $check_sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-                  WHERE TABLE_NAME = 'products' AND COLUMN_NAME = ?";
-    if ($check_stmt = $conn->prepare($check_sql)) {
-        $check_stmt->bind_param("s", $col);
-        if ($check_stmt->execute()) {
-            $check_result = $check_stmt->get_result();
-            if ($check_result->num_rows > 0) {
-                $top_column_found = $col;
-                $check_stmt->close();
-                break;
-            }
-        }
-        $check_stmt->close();
-    }
+foreach (['top_selling', 'bestseller', 'is_bestseller', 'topselling'] as $col) {
+    $chk = $pdo->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = ?"
+    );
+    $chk->execute([$col]);
+    if ($chk->fetchColumn()) { $top_column_found = $col; break; }
 }
-
-// If column found, use it; otherwise get random products
 if ($top_column_found) {
-    // Build query with the actual column name
-    $top_query = "SELECT * FROM products WHERE " . $top_column_found . " = 1 LIMIT 12";
-    if ($stmt = $conn->prepare($top_query)) {
-        if ($stmt->execute()) {
-            $top_result = $stmt->get_result();
-        } else {
-            error_log("Top selling query execute error: " . $stmt->error);
-        }
-        $stmt->close();
-    }
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE `$top_column_found` = 1 AND is_active = 1 LIMIT 12");
 } else {
-    // Fallback: get random products
-    if ($stmt = $conn->prepare("SELECT * FROM products ORDER BY RAND() LIMIT 12")) {
-        if ($stmt->execute()) {
-            $top_result = $stmt->get_result();
-        } else {
-            error_log("Top selling fallback query execute error: " . $stmt->error);
-        }
-        $stmt->close();
-    }
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE is_active = 1 ORDER BY RAND() LIMIT 12");
 }
+$stmt->execute();
+$top_result = $stmt->fetchAll();
 
-// Calculate cart total
-$cart_total = 0;
-if (is_array($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $pid => $qty) {
-        $pid = intval($pid);
-        $qty = intval($qty);
-        
-        if ($stmt = $conn->prepare("SELECT price FROM products WHERE id = ?")) {
-            $stmt->bind_param("i", $pid);
-            if ($stmt->execute()) {
-                $price_result = $stmt->get_result();
-                if ($price_result && $price_result->num_rows > 0) {
-                    $row = $price_result->fetch_assoc();
-                    $cart_total += floatval($row['price']) * $qty;
-                }
-            } else {
-                error_log("Cart price query execute error: " . $stmt->error);
-            }
-            $stmt->close();
-        }
-    }
-}
+$page_title       = 'PrintDepotCo — Printers & Accessories';
+$active_nav       = 'home';
+$meta_description = 'Print Depot Co — Premium ink cartridges, toner, paper, and printing accessories. Fast delivery, great prices, expert support.';
+$show_search      = true;
+require_once __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>PrintDepotCo - Printers & Accessories</title>
-    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
-
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
-        rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Libraries Stylesheet -->
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
-</head>
-
-<body>
-
-    <!-- Spinner Start -->
-    <div id="spinner"
-        class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-    <!-- Spinner End -->
-
-
-    <!-- Topbar Start -->
-    <div class="container-fluid px-5 d-none border-bottom d-lg-block">
-        <div class="row gx-0 align-items-center">
-            <div class="col-lg-4 text-center text-lg-start mb-lg-0">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="contact.php" class="text-muted ms-2">Contact</a>
-                </div>
-            </div>
-            <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
-                <small class="text-dark">Call Us:</small>
-                <a href="#" class="text-muted">(+012) 1234 567890</a>
-            </div>
-            <div class="col-lg-4 text-center text-lg-end">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>USD</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item">Euro</a>
-                            <a href="#" class="dropdown-item">Dollar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="container-fluid px-5 py-4 d-none d-lg-block">
-        <div class="row gx-0 align-items-center text-center">
-            <div class="col-md-4 col-lg-3 text-center text-lg-start">
-                <div class="d-inline-flex align-items-center">
-                    <a href="" class="navbar-brand p-0">
-                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
-                            style="height: 70px; width: auto; max-width: 100px;">
-                    </a>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-6 text-center">
-                <div class="position-relative ps-4">
-                    <form method="GET" action="shop.php" class="d-flex border rounded-pill">
-                        <input class="form-control border-0 rounded-pill w-100 py-3" type="text" name="search" placeholder="Search Looking For?" value="<?php echo htmlspecialchars($search ?? ''); ?>">
-                        <button type="submit" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"><i class="fas fa-search"></i></button>
-                    </form>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-3 text-center text-lg-end">
-                <div class="d-inline-flex align-items-center">
-                    <a href="cart.php" class="text-muted d-flex align-items-center justify-content-center"><span
-                        class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span></a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Topbar End -->
-
-    <!-- Navbar & Hero Start -->
-    <div class="container-fluid nav-bar p-0">
-        <div class="row gx-0 bg-primary px-5 align-items-center">
-            <div class="col-lg-3 d-none d-lg-block">
-                <nav class="navbar navbar-light position-relative" style="width: 250px;">
-                    <button class="navbar-toggler border-0 fs-4 w-100 px-0 text-start" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#allCat">
-                        <h4 class="m-0"><i class="fa fa-bars me-2"></i>All Categories</h4>
-                    </button>
-                    <div class="collapse navbar-collapse rounded-bottom" id="allCat">
-                        <div class="navbar-nav ms-auto py-0">
-                            <ul class="list-unstyled categories-bars">
-                                <?php
-                                foreach($categories_array as $cat) {
-                                    echo "<li>
-                                        <div class='categories-bars-item'>
-                                            <a href='shop.php?category=" . htmlspecialchars($cat['id']) . "'>" . htmlspecialchars($cat['name']) . "</a>
-                                        </div>
-                                    </li>";
-                                }
-                                ?>
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-            <div class="col-12 col-lg-9">
-                <nav class="navbar navbar-expand-lg navbar-light bg-primary ">
-                    <a href="" class="navbar-brand d-block d-lg-none">
-                        <img src="/img/printdepotco-icon.png" alt="Printdepotco" 
-                            style="height: 70px; width: auto; max-width: 100px;">
-                    </a>
-                    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarCollapse">
-                        <span class="fa fa-bars fa-1x"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarCollapse">
-                        <div class="navbar-nav ms-auto py-0">
-                            <a href="index.php" class="nav-item nav-link active">Home</a>
-                            <a href="shop.php" class="nav-item nav-link">Shop</a>
-                            <a href="about.html" class="nav-item nav-link">About Us</a>
-                            <a href="orders/track.php" class="nav-item nav-link">Track Orders</a>
-                            <a href="cart.php" class="nav-item nav-link">Cart</a>
-                            <a href="contact.php" class="nav-item nav-link me-2">Contact</a>
-
-                            <!-- User Account Menu -->
-                            <?php if (isset($_SESSION['user_id'])): ?>
-                                <div class="nav-item dropdown">
-                                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($_SESSION['first_name']); ?>
-                                    </a>
-                                    <div class="dropdown-menu m-0">
-                                        <a href="user/profile.php" class="dropdown-item">My Profile</a>
-                                        <a href="user/logout.php" class="dropdown-item text-danger">Logout</a>
-                                    </div>
-                                </div>
-                            <?php else: ?>
-                                <a href="user/login.php" class="nav-item nav-link">Login</a>
-                                <!-- <a href="user/register.php" class="nav-item nav-link">Register</a> -->
-                            <?php endif; ?>
-
-                            <div class="nav-item dropdown d-block d-lg-none mb-3">
-                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">All Category</a>
-                                <div class="dropdown-menu m-0">
-                                    <ul class="list-unstyled categories-bars">
-                                        <?php
-                                        foreach($categories_array as $cat) {
-                                            echo "<li>
-                                                <div class='categories-bars-item'>
-                                                    <a href='shop.php?category=" . htmlspecialchars($cat['id']) . "'>" . htmlspecialchars($cat['name']) . "</a>
-                                                </div>
-                                            </li>";
-                                        }
-                                        ?>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </div>
-    <!-- Navbar & Hero End -->
 
     <!-- Carousel Start -->
     <div class="container-fluid carousel bg-light px-0">
@@ -557,8 +262,8 @@ if (is_array($_SESSION['cart'])) {
                         <div class="row g-4">
                             <?php
                             $delay = 0.1;
-                            if ($all_products_result && $all_products_result->num_rows > 0) {
-                                while($product = $all_products_result->fetch_assoc()) {
+                            if (!empty($all_products_result)) {
+                                foreach($all_products_result as $product) {
                                     $product_id = htmlspecialchars($product['id'] ?? '');
                                     $product_name = htmlspecialchars($product['name'] ?? '');
                                     $product_price = isset($product['price']) ? number_format($product['price'], 2) : '0.00';
@@ -572,7 +277,7 @@ if (is_array($_SESSION['cart'])) {
                                 <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
-                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
+                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" loading="lazy" alt="<?php echo $product_name; ?>">
                                             <?php if ($badge): ?>
                                             <div class="product-<?php echo strtolower($badge); ?>"><?php echo $badge; ?></div>
                                             <?php endif; ?>
@@ -621,8 +326,8 @@ if (is_array($_SESSION['cart'])) {
                         <div class="row g-4">
                             <?php
                             $delay = 0.1;
-                            if ($new_result && $new_result->num_rows > 0) {
-                                while($product = $new_result->fetch_assoc()) {
+                            if (!empty($new_result)) {
+                                foreach($new_result as $product) {
                                     $product_id = htmlspecialchars($product['id'] ?? '');
                                     $product_name = htmlspecialchars($product['name'] ?? '');
                                     $product_price = isset($product['price']) ? number_format($product['price'], 2) : '0.00';
@@ -635,7 +340,7 @@ if (is_array($_SESSION['cart'])) {
                                 <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
-                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
+                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" loading="lazy" alt="<?php echo $product_name; ?>">
                                             <div class="product-new">New</div>
                                             <div class="product-details">
                                                 <a href="single.php?id=<?php echo $product_id; ?>"><i class="fa fa-eye fa-1x"></i></a>
@@ -663,8 +368,8 @@ if (is_array($_SESSION['cart'])) {
                         <div class="row g-4">
                             <?php
                             $delay = 0.1;
-                            if ($featured_result && $featured_result->num_rows > 0) {
-                                while($product = $featured_result->fetch_assoc()) {
+                            if (!empty($featured_result)) {
+                                foreach($featured_result as $product) {
                                     $product_id = htmlspecialchars($product['id'] ?? '');
                                     $product_name = htmlspecialchars($product['name'] ?? '');
                                     $product_price = isset($product['price']) ? number_format($product['price'], 2) : '0.00';
@@ -677,7 +382,7 @@ if (is_array($_SESSION['cart'])) {
                                 <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
-                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
+                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" loading="lazy" alt="<?php echo $product_name; ?>">
                                             <div class="product-details">
                                                 <a href="single.php?id=<?php echo $product_id; ?>"><i class="fa fa-eye fa-1x"></i></a>
                                             </div>
@@ -704,8 +409,8 @@ if (is_array($_SESSION['cart'])) {
                         <div class="row g-4">
                             <?php
                             $delay = 0.1;
-                            if ($top_result && $top_result->num_rows > 0) {
-                                while($product = $top_result->fetch_assoc()) {
+                            if (!empty($top_result)) {
+                                foreach($top_result as $product) {
                                     $product_id = htmlspecialchars($product['id'] ?? '');
                                     $product_name = htmlspecialchars($product['name'] ?? '');
                                     $product_price = isset($product['price']) ? number_format($product['price'], 2) : '0.00';
@@ -718,7 +423,7 @@ if (is_array($_SESSION['cart'])) {
                                 <div class="product-item rounded wow FadeInUp" data-wow-delay="<?php echo $delay; ?>s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
-                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" alt="<?php echo $product_name; ?>">
+                                            <img src="<?php echo $image; ?>" class="img-fluid w-100 rounded-top" loading="lazy" alt="<?php echo $product_name; ?>">
                                             <div class="product-details">
                                                 <a href="single.php?id=<?php echo $product_id; ?>"><i class="fa fa-eye fa-1x"></i></a>
                                             </div>
@@ -745,84 +450,4 @@ if (is_array($_SESSION['cart'])) {
     </div>
     <!-- Our Products End -->
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-light footer pt-5">
-        <div class="container py-5">
-            <div class="row g-5">
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.1s">
-                    <h5 class="text-light mb-4">Why Choose Us</h5>
-                    <p class="mb-4">We provide high-performance printing solutions and expert support to maximize your efficiency and lower your long-term costs.</p>
-                    <div class="d-flex align-items-center">
-                        <img class="img-fluid flex-shrink-0" src="img/footer-logo.png" alt="">
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.3s">
-                    <h5 class="text-light mb-4">Address</h5>
-                    <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                    <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                    <p><i class="fa fa-envelope me-3"></i>info@printdepotco.com</p>
-                    <div class="d-flex pt-2">
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i
-                                class="fab fa-youtube"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i
-                                class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.5s">
-                    <h5 class="text-light mb-4">Quick Links</h5>
-                    <a class="btn btn-link" href="about.html">About Us</a><br>
-                    <a class="btn btn-link" href="contact.php">Contact Us</a><br>
-                    <a class="btn btn-link" href="terms.html">Terms &amp; Condition</a>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3 wow FadeInUp" data-wow-delay="0.7s">
-                    <h5 class="text-light mb-4">Newsletter</h5>
-                    <p>Sign up for our newsletter</p>
-                    <div class="position-relative w-100 mt-3">
-                        <input class="form-control border-light w-100 py-2 ps-4 pe-5" type="text"
-                            placeholder="Your Email" style="background: rgba(255, 255, 255, 0.87);">
-                        <button type="button"
-                            class="btn btn-primary py-2 position-absolute top-0 end-0">SignUp</button>
-                    </div> 
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid copyright">
-            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-                <div class="text-center text-md-start mb-3 mb-md-0">
-                    &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Right Reserved.
-                </div>
-                <!-- <div class="text-center text-md-end">
-                    Designed By <a class="border-bottom" href="https://github.com/AnikethGit">aniketh_sahu</a>
-                </div> -->
-            </div>
-        </div>
-    </div>
-    <!-- Footer End -->
-
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i
-            class="fa fa-arrow-up"></i></a>
-
-
-    <!-- JavaScript Libraries -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
-</body>
-
-</html>
-<?php
-if ($conn) {
-    $conn->close();
-}
-?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

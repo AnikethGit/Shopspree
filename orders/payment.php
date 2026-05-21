@@ -1,17 +1,7 @@
-+++++<?php
-/**
- * Payment Processing Page (Dummy Payment Gateway)
- * Displays realistic payment form and processes dummy transactions
- * Saves payment details to database without real transaction
- */
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+<?php
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../cart/get_cart.php';
 
-// Check if checkout data is in session
 if (!isset($_SESSION['checkout_data'])) {
     add_message('Please complete checkout first', 'error');
     redirect('../checkout.php');
@@ -22,162 +12,53 @@ $payment_method = $checkout_data['payment_method'];
 $total_amount = $checkout_data['total'];
 $messages = get_messages();
 
-// Handle payment form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     $payment_details = [];
-    
-    // Capture payment details based on method (no hard failures for demo)
+
     if ($payment_method === 'Credit Card') {
-        // Capture card details
         $card_number = preg_replace('/\s+/', '', $_POST['card_number'] ?? '');
         $card_holder = sanitize($_POST['card_holder'] ?? '');
         $expiry_month = intval($_POST['expiry_month'] ?? 0);
         $expiry_year = intval($_POST['expiry_year'] ?? 0);
-        $cvv = preg_replace('/\D/', '', $_POST['cvv'] ?? '');
-        
-        // For demo purposes, do not block on validation.
-        // Browser "required" attributes handle basic UX validation, and
-        // the backend always treats the payment as successful.
         $masked_card = 'XXXX-XXXX-XXXX-' . substr($card_number ?: '0000', -4);
         $payment_details = [
             'card_number' => $masked_card,
             'card_holder' => !empty($card_holder) ? $card_holder : 'Demo User',
             'expiry' => (($expiry_month ?: 1) . '/' . ($expiry_year ?: (date('Y') + 1)))
         ];
-        
     } elseif ($payment_method === 'Bank Transfer') {
-        // Capture bank details
         $account_holder = sanitize($_POST['account_holder'] ?? '');
         $account_number = preg_replace('/\D/', '', $_POST['account_number'] ?? '');
         $bank_name = sanitize($_POST['bank_name'] ?? '');
-        
-        // No hard validation failures in demo; just mask and store
         $masked_account = 'XXXX-XXXX-' . substr($account_number ?: '0000', -4);
         $payment_details = [
             'account_holder' => !empty($account_holder) ? $account_holder : 'Demo Account',
             'account_number' => $masked_account,
             'bank_name' => !empty($bank_name) ? $bank_name : 'Demo Bank'
         ];
-        
-    } elseif ($payment_method === 'PayPal' || $payment_method === 'Klarna') {
-        // No extra fields to validate for demo PayPal/Klarna flows
-        $payment_details = [];
-    } elseif ($payment_method === 'COD') {
-        // COD doesn't need payment details
+    } else {
         $payment_details = [];
     }
-    
-    // Always process order for demo (100% success rate configured below)
+
     if (empty($errors)) {
-        // Simulate payment processing with dummy transaction (100% success rate)
         $transaction_id = 'TXN-' . strtoupper(uniqid());
         $payment_status = simulate_payment_processing($payment_method);
-        
+
         if ($payment_status['success']) {
-            // Store payment info in session for order creation (for display / debugging only)
             $_SESSION['payment_processed'] = true;
             $_SESSION['payment_details'] = $payment_details;
             $_SESSION['transaction_id'] = $transaction_id;
             $_SESSION['payment_status'] = 'Completed';
-            
-            // Proceed to process the order immediately
-            // Inline cart functions for order processing
-            function is_cart_empty() {
-                if (!isset($_SESSION['cart'])) {
-                    return true;
-                }
-                return !is_array($_SESSION['cart']) || count($_SESSION['cart']) === 0;
-            }
-
-            function get_cart_items_inline() {
-                global $conn;
-                
-                if (!isset($_SESSION['cart'])) {
-                    return [];
-                }
-                
-                if (!is_array($_SESSION['cart']) || count($_SESSION['cart']) === 0) {
-                    return [];
-                }
-                
-                $cart_items = [];
-                
-                foreach ($_SESSION['cart'] as $product_id => $quantity) {
-                    $product_id = intval($product_id);
-                    $quantity = intval($quantity);
-                    
-                    if ($quantity <= 0 || $product_id <= 0) {
-                        continue;
-                    }
-                    
-                    $query = "SELECT id, name, price FROM products WHERE id = ?";
-                    
-                    if ($stmt = $conn->prepare($query)) {
-                        $stmt->bind_param("i", $product_id);
-                        
-                        if ($stmt->execute()) {
-                            $result = $stmt->get_result();
-                            
-                            if ($result && $result->num_rows > 0) {
-                                $product = $result->fetch_assoc();
-                                
-                                $cart_items[] = [
-                                    'id' => intval($product['id']),
-                                    'product_id' => intval($product['id']),
-                                    'name' => htmlspecialchars($product['name']),
-                                    'price' => floatval($product['price']),
-                                    'quantity' => $quantity
-                                ];
-                            }
-                        }
-                        
-                        $stmt->close();
-                    }
-                }
-                
-                return $cart_items;
-            }
-
-            function calculate_cart_totals_inline($cart_items, $tax_rate = 0.08, $shipping = 50) {
-                $subtotal = 0.0;
-                
-                if (is_array($cart_items)) {
-                    foreach ($cart_items as $item) {
-                        $price = isset($item['price']) ? floatval($item['price']) : 0;
-                        $qty = isset($item['quantity']) ? intval($item['quantity']) : 0;
-                        $subtotal += ($price * $qty);
-                    }
-                }
-                
-                $subtotal = round($subtotal, 2);
-
-                // Apply shipping only for orders under $200
-                $effective_shipping = ($subtotal > 0 && $subtotal < 200) ? floatval($shipping) : 0.0;
-
-                $tax = round($subtotal * floatval($tax_rate), 2);
-                $total = round($subtotal + $tax + $effective_shipping, 2);
-                
-                return [
-                    'subtotal' => $subtotal,
-                    'tax' => $tax,
-                    'tax_rate' => floatval($tax_rate) * 100,
-                    'shipping' => $effective_shipping,
-                    'total' => $total,
-                    'item_count' => count($cart_items)
-                ];
-            }
 
             try {
-                // Check if cart is empty
                 if (is_cart_empty()) {
                     add_message('Your cart is empty', 'error');
                     redirect('../cart.php');
                 }
 
-                // Get cart data
-                $cart_items = get_cart_items_inline();
-                $totals = calculate_cart_totals_inline($cart_items, 0.08, 50);
+                $cart_items = get_cart_items();
+                $totals = calculate_cart_totals($cart_items, TAX_RATE, STANDARD_SHIPPING);
 
                 if (empty($cart_items)) {
                     add_message('Your cart is empty or products not found', 'error');
@@ -185,254 +66,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Validate stock
+                $stock_check = $pdo->prepare("SELECT quantity FROM products WHERE id = ?");
                 foreach ($cart_items as $item) {
                     $item_id = intval($item['id']);
-                    $qty = intval($item['quantity']);
-                    
-                    $stock_query = "SELECT quantity FROM products WHERE id = ?";
-                    if ($stmt = $conn->prepare($stock_query)) {
-                        $stmt->bind_param("i", $item_id);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-                        
-                        if ($result && $result->num_rows > 0) {
-                            $product = $result->fetch_assoc();
-                            if (intval($product['quantity']) < $qty) {
-                                throw new Exception('Product ' . htmlspecialchars($item['name']) . ' is out of stock');
-                            }
-                        } else {
-                            throw new Exception('Product not found');
-                        }
-                        $stmt->close();
+                    $stock_check->execute([$item_id]);
+                    $product = $stock_check->fetch();
+                    if (!$product) {
+                        throw new Exception('Product not found');
+                    }
+                    if (intval($product['quantity']) < intval($item['quantity'])) {
+                        throw new Exception('Product ' . htmlspecialchars($item['name']) . ' is out of stock');
                     }
                 }
 
                 // Create order
                 $order_id = 'ORD-' . strtoupper(uniqid());
                 $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
-                
                 $shipping_address = $checkout_data['address'] . ', ' . $checkout_data['city'] . ', ' . $checkout_data['state'];
                 $notes = isset($checkout_data['notes']) ? sanitize($checkout_data['notes']) : '';
-                
-                // Determine order status based on payment method
                 $order_status = ($payment_method === 'COD') ? 'Pending' : 'Payment Received';
-                
-                // Prepare order insert query (aligned with current DB schema: no payment_status, transaction_id, or payment_details columns)
+
                 if ($user_id !== null) {
-                    // User logged in - include user_id
-                    $order_query = "INSERT INTO orders (
-                                        order_id, 
-                                        user_id, 
-                                        email, 
-                                        phone, 
-                                        shipping_address, 
-                                        shipping_city, 
-                                        shipping_state, 
-                                        shipping_postal_code, 
-                                        total_amount, 
-                                        payment_method,
-                                        order_status, 
-                                        notes, 
-                                        created_at
-                                    ) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-                    
-                    if ($order_stmt = $conn->prepare($order_query)) {
-                        $bind_result = $order_stmt->bind_param(
-                            "sissssssdsss",
-                            $order_id,
-                            $user_id,
-                            $checkout_data['email'],
-                            $checkout_data['phone'],
-                            $shipping_address,
-                            $checkout_data['city'],
-                            $checkout_data['state'],
-                            $checkout_data['postal_code'],
-                            $totals['total'],
-                            $payment_method,
-                            $order_status,
-                            $notes
-                        );
-                        
-                        if (!$bind_result) {
-                            throw new Exception("bind_param failed (logged-in user): " . $order_stmt->error);
-                        }
-                    } else {
-                        throw new Exception("prepare failed: " . $conn->error);
-                    }
+                    $pdo->prepare("INSERT INTO orders (
+                        order_id, user_id, email, phone,
+                        shipping_address, shipping_city, shipping_state, shipping_postal_code,
+                        total_amount, payment_method, order_status, notes, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())")->execute([
+                        $order_id, $user_id,
+                        $checkout_data['email'], $checkout_data['phone'],
+                        $shipping_address, $checkout_data['city'], $checkout_data['state'], $checkout_data['postal_code'],
+                        $totals['total'], $payment_method, $order_status, $notes
+                    ]);
                 } else {
-                    // Guest checkout - no user_id
-                    $order_query = "INSERT INTO orders (
-                                        order_id, 
-                                        email, 
-                                        phone, 
-                                        shipping_address, 
-                                        shipping_city, 
-                                        shipping_state, 
-                                        shipping_postal_code, 
-                                        total_amount, 
-                                        payment_method, 
-                                        order_status, 
-                                        notes, 
-                                        created_at
-                                    ) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-                    
-                    if ($order_stmt = $conn->prepare($order_query)) {
-                        $bind_result = $order_stmt->bind_param(
-                            "sssssssdsss",
-                            $order_id,
-                            $checkout_data['email'],
-                            $checkout_data['phone'],
-                            $shipping_address,
-                            $checkout_data['city'],
-                            $checkout_data['state'],
-                            $checkout_data['postal_code'],
-                            $totals['total'],
-                            $payment_method,
-                            $order_status,
-                            $notes
-                        );
-                        
-                        if (!$bind_result) {
-                            throw new Exception("bind_param failed (guest): " . $order_stmt->error);
-                        }
-                    } else {
-                        throw new Exception("prepare failed: " . $conn->error);
-                    }
+                    $pdo->prepare("INSERT INTO orders (
+                        order_id, email, phone,
+                        shipping_address, shipping_city, shipping_state, shipping_postal_code,
+                        total_amount, payment_method, order_status, notes, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())")->execute([
+                        $order_id,
+                        $checkout_data['email'], $checkout_data['phone'],
+                        $shipping_address, $checkout_data['city'], $checkout_data['state'], $checkout_data['postal_code'],
+                        $totals['total'], $payment_method, $order_status, $notes
+                    ]);
                 }
-                
-                // Execute the order insert
-                if ($order_stmt->execute()) {
-                    $order_db_id = $conn->insert_id;
-                    $order_stmt->close();
-                    
-                    // Add items to order_items
-                    $item_query = "INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal) 
-                                  VALUES (?, ?, ?, ?, ?, ?)";
-                    
-                    foreach ($cart_items as $item) {
-                        $subtotal = floatval($item['price']) * intval($item['quantity']);
-                        $item_id = intval($item['id']);
-                        $item_qty = intval($item['quantity']);
-                        $item_price = floatval($item['price']);
-                        
-                        if ($item_stmt = $conn->prepare($item_query)) {
-                            $item_bind = $item_stmt->bind_param(
-                                "iisidd",
-                                $order_db_id,
-                                $item_id,
-                                $item['name'],
-                                $item_qty,
-                                $item_price,
-                                $subtotal
-                            );
-                            
-                            if (!$item_bind) {
-                                error_log("Item bind_param error: " . $item_stmt->error);
-                                continue;
-                            }
-                            
-                            if ($item_stmt->execute()) {
-                                // Update product stock
-                                $stock_update = "UPDATE products SET quantity = quantity - ? WHERE id = ?";
-                                if ($stock_stmt = $conn->prepare($stock_update)) {
-                                    $stock_stmt->bind_param("ii", $item_qty, $item_id);
-                                    $stock_stmt->execute();
-                                    $stock_stmt->close();
-                                }
-                            } else {
-                                error_log("Error inserting order item: " . $item_stmt->error);
-                            }
-                            $item_stmt->close();
-                        }
-                    }
-                    
-                    // Clear session data
-                    $_SESSION['cart'] = [];
-                    unset($_SESSION['checkout_data']);
-                    unset($_SESSION['payment_processed']);
-                    unset($_SESSION['payment_details']);
-                    unset($_SESSION['transaction_id']);
-                    unset($_SESSION['payment_status']);
-                    
-                    // Set session variables for thank you page
-                    $_SESSION['last_order_id'] = $order_id;
-                    $_SESSION['last_order_db_id'] = $order_db_id;
-                    
-                    // Redirect to thank you page after successful order creation
-                    header('Location: thank_you.php');
-                    exit();
-                } else {
-                    error_log("Order execution failed: " . $order_stmt->error);
-                    throw new Exception('Error creating order. Please try again.');
+
+                $order_db_id = $pdo->lastInsertId();
+
+                $item_stmt = $pdo->prepare(
+                    "INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal)
+                     VALUES (?, ?, ?, ?, ?, ?)"
+                );
+                $stock_stmt = $pdo->prepare("UPDATE products SET quantity = quantity - ? WHERE id = ?");
+
+                foreach ($cart_items as $item) {
+                    $item_id  = intval($item['id']);
+                    $item_qty = intval($item['quantity']);
+                    $item_price = floatval($item['price']);
+                    $item_stmt->execute([$order_db_id, $item_id, $item['name'], $item_qty, $item_price, round($item_price * $item_qty, 2)]);
+                    $stock_stmt->execute([$item_qty, $item_id]);
                 }
+
+                clear_cart();
+                unset($_SESSION['checkout_data'], $_SESSION['payment_processed'],
+                      $_SESSION['payment_details'], $_SESSION['transaction_id'], $_SESSION['payment_status']);
+
+                $_SESSION['last_order_id'] = $order_id;
+                $_SESSION['last_order_db_id'] = $order_db_id;
+
+                header('Location: thank_you.php');
+                exit();
 
             } catch (Exception $e) {
                 error_log("Exception in order creation: " . $e->getMessage());
                 add_message('Error processing order: ' . htmlspecialchars($e->getMessage()), 'error');
-                
-                // Clear payment session on error
-                unset($_SESSION['payment_processed']);
-                unset($_SESSION['payment_details']);
-                unset($_SESSION['transaction_id']);
-                
+                unset($_SESSION['payment_processed'], $_SESSION['payment_details'], $_SESSION['transaction_id']);
                 redirect('../checkout.php');
             }
         } else {
-            // Dummy payment failed (should never happen with 100% success rate)
             add_message('Payment processing failed: ' . $payment_status['message'], 'error');
         }
     } else {
-        // Show validation errors (currently unused as we do not hard-fail in demo)
         foreach ($errors as $error) {
             add_message($error, 'error');
         }
     }
 }
 
-/**
- * Validate credit card using Luhn algorithm
- * (Kept for reference, no longer used for blocking demo payments)
- */
 function validate_card_number($card_number) {
     $card_number = preg_replace('/\D/', '', $card_number);
-    
-    if (strlen($card_number) < 13 || strlen($card_number) > 19) {
-        return false;
-    }
-    
-    $sum = 0;
-    $digit = 0;
-    $add_digit = 0;
-    
+    if (strlen($card_number) < 13 || strlen($card_number) > 19) return false;
+    $sum = 0; $add_digit = 0;
     for ($i = strlen($card_number) - 1; $i >= 0; $i--) {
         $digit = (int)$card_number[$i];
-        
-        if ($add_digit % 2 === 1) {
-            $digit *= 2;
-            if ($digit > 9) {
-                $digit -= 9;
-            }
-        }
-        
-        $sum += $digit;
-        $add_digit++;
+        if ($add_digit % 2 === 1) { $digit *= 2; if ($digit > 9) $digit -= 9; }
+        $sum += $digit; $add_digit++;
     }
-    
     return ($sum % 10 === 0);
 }
 
-/**
- * Simulate payment processing (Dummy)
- * Always returns success (100% success rate) to avoid confusion
- */
 function simulate_payment_processing($payment_method) {
-    return [
-        'success' => true,
-        'message' => 'Payment processed successfully',
-        'status'  => 'Completed'
-    ];
+    return ['success' => true, 'message' => 'Payment processed successfully', 'status' => 'Completed'];
 }
 
 ?>
@@ -443,8 +176,7 @@ function simulate_payment_processing($payment_method) {
     <title>Payment - PrintDepotCo</title>
     <link rel="icon" type="image/x-icon" href="../img/favicon.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+    <meta name="robots" content="noindex, nofollow">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

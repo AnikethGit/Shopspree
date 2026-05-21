@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/helpers.php';
 
 // Check if user is logged in
 if (!is_logged_in()) {
@@ -34,19 +33,10 @@ $orders_stmt = $pdo->prepare(
 $orders_stmt->execute([$user_id, $user_email]);
 $orders = $orders_stmt->fetchAll();
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - PrintDepotCo</title>
-    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
-    <link href="../css/style.css" rel="stylesheet">
-    <style>
+$page_title   = 'My Profile — PrintDepotCo';
+$active_nav   = 'profile';
+$meta_noindex = true;
+$extra_head   = '<style>
         body { background: #f5f5f5; }
         .profile-wrapper { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
         .profile-sidebar {
@@ -114,62 +104,9 @@ $orders = $orders_stmt->fetchAll();
             .info-grid { grid-template-columns: 1fr; }
             .orders-table { font-size: 12px; }
         }
-    </style>
-</head>
-<body>
-
-    <!-- Topbar Start -->
-    <div class="container-fluid px-5 d-none border-bottom d-lg-block">
-        <div class="row gx-0 align-items-center">
-            <div class="col-lg-6">
-                <div class="d-inline-flex align-items-center" style="height:45px;">
-                    <a href="../contact.php" class="text-muted ms-2">Contact Us</a>
-                </div>
-            </div>
-            <div class="col-lg-6 text-end">
-                <div class="d-inline-flex align-items-center" style="height:45px;">
-                    <span class="text-muted me-3"><i class="fas fa-user me-1"></i><?php echo htmlspecialchars($user['full_name']); ?></span>
-                    <a href="logout.php" class="text-danger">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="container-fluid px-5 py-3 d-none d-lg-block">
-        <div class="row gx-0 align-items-center">
-            <div class="col-lg-3">
-                <a href="../index.php" class="navbar-brand p-0">
-                    <img src="/img/printdepotco-icon.png" alt="PrintDepotCo" style="height:60px; width:auto;">
-                </a>
-            </div>
-        </div>
-    </div>
-    <!-- Topbar End -->
-
-    <!-- Navbar -->
-    <div class="container-fluid nav-bar p-0">
-        <div class="row gx-0 bg-primary px-5 align-items-center">
-            <div class="col-12">
-                <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-                    <a href="../index.php" class="navbar-brand d-block d-lg-none">
-                        <img src="/img/printdepotco-icon.png" alt="PrintDepotCo" style="height:55px; width:auto;">
-                    </a>
-                    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                        <span class="fa fa-bars fa-1x"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarCollapse">
-                        <div class="navbar-nav ms-auto py-0">
-                            <a href="../index.php" class="nav-item nav-link">Home</a>
-                            <a href="../shop.php" class="nav-item nav-link">Shop</a>
-                            <a href="../cart.php" class="nav-item nav-link">Cart</a>
-                            <a href="profile.php" class="nav-item nav-link active">My Profile</a>
-                            <a href="logout.php" class="nav-item nav-link text-warning">Logout</a>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </div>
-    <!-- Navbar End -->
+    </style>';
+require_once __DIR__ . '/../includes/header.php';
+?>
 
     <div class="container profile-wrapper">
         <?php foreach ($messages as $msg): ?>
@@ -286,15 +223,4 @@ $orders = $orders_stmt->fetchAll();
 
     <br><br>
 
-    <!-- Footer -->
-    <div class="container-fluid bg-dark text-light py-4">
-        <div class="container text-center">
-            <p class="mb-0">&copy; <a class="border-bottom text-light" href="../index.php">Print Depot Co</a>, All Rights Reserved.</p>
-        </div>
-    </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/main.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

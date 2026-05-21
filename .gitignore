@@ -1,0 +1,21 @@
+# Environment — never commit real credentials
+config/.env
+
+# PHP logs
+*.log
+error_log
+
+# User uploads
+/img/uploads/*
+!/img/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

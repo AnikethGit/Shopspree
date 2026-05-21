@@ -5,14 +5,20 @@
  * Useful for future frontend improvements (React, Vue, etc.)
  */
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/../cart/cart_handler.php';
 require_once __DIR__ . '/../cart/get_cart.php';
+
+header('Content-Type: application/json');
+
+// Restrict CORS to own origin only
+$_parsed_url    = parse_url(SITE_URL);
+$_allowed_origin = $_parsed_url['scheme'] . '://' . $_parsed_url['host']
+    . (isset($_parsed_url['port']) ? ':' . $_parsed_url['port'] : '');
+header('Access-Control-Allow-Origin: ' . $_allowed_origin);
+header('Vary: Origin');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+unset($_parsed_url, $_allowed_origin);
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = sanitize($_GET['action'] ?? $_POST['action'] ?? '');
@@ -30,7 +36,7 @@ try {
                 $response['cart_count'] = get_cart_count();
             }
             else if ($action === 'remove') {
-                $cart_id = (int)($_POST['cart_id'] ?? 0);
+                $cart_id = (int)($_POST['product_id'] ?? 0);
                 $success = remove_from_cart($cart_id);
                 $response = [
                     'success' => $success,
@@ -39,9 +45,9 @@ try {
                 ];
             }
             else if ($action === 'update') {
-                $cart_id = (int)($_POST['cart_id'] ?? 0);
+                $cart_id = (int)($_POST['product_id'] ?? 0);
                 $quantity = max(0, (int)($_POST['quantity'] ?? 1));
-                
+
                 $success = update_cart_quantity($cart_id, $quantity);
                 $response = [
                     'success' => $success,
@@ -61,7 +67,7 @@ try {
 
         case 'GET':
             if ($action === 'cart') {
-                $cart = get_cart_summary(0.08, 0);
+                $cart = get_cart_summary(TAX_RATE, STANDARD_SHIPPING);
                 $response = [
                     'success' => true,
                     'items' => $cart['items'],
@@ -86,11 +92,9 @@ try {
             $response = ['success' => false, 'message' => 'Method not allowed'];
     }
 } catch (Exception $e) {
+    error_log('Cart API error: ' . $e->getMessage());
     http_response_code(500);
-    $response = [
-        'success' => false,
-        'message' => 'Server error: ' . $e->getMessage()
-    ];
+    $response = ['success' => false, 'message' => 'An unexpected error occurred. Please try again.'];
 }
 
 echo json_encode($response, JSON_PRETTY_PRINT);
