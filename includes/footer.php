@@ -9,14 +9,14 @@
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3">
                     <h5 class="text-light mb-4">Address</h5>
-                    <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                    <p><i class="fa fa-phone-alt me-3"></i><?php echo htmlspecialchars(defined('SITE_PHONE') ? SITE_PHONE : ''); ?></p>
-                    <p><i class="fa fa-envelope me-3"></i><?php echo htmlspecialchars(defined('SITE_EMAIL') ? SITE_EMAIL : ''); ?></p>
+                    <p><i class="fa fa-map-marker-alt me-3"></i><?php echo htmlspecialchars(COMPANY_ADDRESS); ?></p>
+                    <p><i class="fa fa-phone-alt me-3"></i><a href="tel:<?php echo htmlspecialchars(SITE_PHONE); ?>" class="text-light text-decoration-none"><?php echo htmlspecialchars(SITE_PHONE); ?></a></p>
+                    <p><i class="fa fa-envelope me-3"></i><a href="mailto:<?php echo htmlspecialchars(SITE_EMAIL); ?>" class="text-light text-decoration-none"><?php echo htmlspecialchars(SITE_EMAIL); ?></a></p>
                     <div class="d-flex pt-2">
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href=""><i class="fab fa-youtube"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle rounded-0 me-0" href=""><i class="fab fa-linkedin-in"></i></a>
+                        <?php if (SOCIAL_TWITTER):  ?><a class="btn btn-square btn-outline-light rounded-circle me-2" href="<?php echo htmlspecialchars(SOCIAL_TWITTER);  ?>" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a><?php endif; ?>
+                        <?php if (SOCIAL_FACEBOOK): ?><a class="btn btn-square btn-outline-light rounded-circle me-2" href="<?php echo htmlspecialchars(SOCIAL_FACEBOOK); ?>" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a><?php endif; ?>
+                        <?php if (SOCIAL_YOUTUBE):  ?><a class="btn btn-square btn-outline-light rounded-circle me-2" href="<?php echo htmlspecialchars(SOCIAL_YOUTUBE);  ?>" target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a><?php endif; ?>
+                        <?php if (SOCIAL_LINKEDIN): ?><a class="btn btn-square btn-outline-light rounded-circle me-0" href="<?php echo htmlspecialchars(SOCIAL_LINKEDIN); ?>" target="_blank" rel="noopener"><i class="fab fa-linkedin-in"></i></a><?php endif; ?>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-6 col-xl-3">
@@ -38,7 +38,7 @@
         <div class="container-fluid copyright">
             <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
                 <div class="text-center text-md-start mb-3 mb-md-0">
-                    &copy; <a class="border-bottom" href="#">Print Depot Co</a>, All Rights Reserved.
+                    &copy; <?php echo date('Y'); ?> <a class="border-bottom" href="/"><?php echo htmlspecialchars(SITE_NAME); ?></a>, All Rights Reserved.
                 </div>
             </div>
         </div>

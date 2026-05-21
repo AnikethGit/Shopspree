@@ -2,9 +2,9 @@
 require_once __DIR__ . '/config/db.php';
 $messages = get_messages();
 
-$page_title       = 'Contact Us — PrintDepotCo';
+$page_title       = 'Contact Us — ' . SITE_NAME;
 $active_nav       = 'contact';
-$meta_description = 'Get in touch with Print Depot Co. We\'re here to help with your printing needs.';
+$meta_description = 'Get in touch with ' . SITE_NAME . '. We\'re here to help with your printing needs.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -98,7 +98,7 @@ require_once __DIR__ . '/includes/header.php';
                                         <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
                                     </div>
                                     <h4>Address</h4>
-                                    <p class="mb-2">123 Street, New York, USA</p>
+                                    <p class="mb-2"><?php echo htmlspecialchars(COMPANY_ADDRESS); ?></p>
                                 </div>
                             </div>
                             <div class="col-md-6 col-xl-3">
@@ -107,7 +107,7 @@ require_once __DIR__ . '/includes/header.php';
                                         <i class="fas fa-envelope fa-2x text-primary"></i>
                                     </div>
                                     <h4>Mail Us</h4>
-                                    <p class="mb-2">info@printdepotco.com</p>
+                                    <p class="mb-2"><a href="mailto:<?php echo htmlspecialchars(SITE_EMAIL); ?>"><?php echo htmlspecialchars(SITE_EMAIL); ?></a></p>
                                 </div>
                             </div>
                             <div class="col-md-6 col-xl-3">
@@ -116,7 +116,7 @@ require_once __DIR__ . '/includes/header.php';
                                         <i class="fa fa-phone-alt fa-2x text-primary"></i>
                                     </div>
                                     <h4>Telephone</h4>
-                                    <p class="mb-2">(+012) 3456 7890</p>
+                                    <p class="mb-2"><a href="tel:<?php echo htmlspecialchars(SITE_PHONE); ?>"><?php echo htmlspecialchars(SITE_PHONE); ?></a></p>
                                 </div>
                             </div>
                             <div class="col-md-6 col-xl-3">
@@ -125,7 +125,7 @@ require_once __DIR__ . '/includes/header.php';
                                         <i class="fab fa-firefox-browser fa-2x text-primary"></i>
                                     </div>
                                     <h4>Website</h4>
-                                    <p class="mb-2">www.printdepotco.com</p>
+                                    <p class="mb-2"><a href="<?php echo htmlspecialchars(SITE_URL); ?>" target="_blank"><?php echo htmlspecialchars(parse_url(SITE_URL, PHP_URL_HOST)); ?></a></p>
                                 </div>
                             </div>
                         </div>

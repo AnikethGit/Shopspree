@@ -34,7 +34,7 @@ try {
     die('ERROR: ' . htmlspecialchars($e->getMessage()));
 }
 
-$page_title   = 'Shopping Cart — PrintDepotCo';
+$page_title   = 'Shopping Cart — ' . SITE_NAME;
 $active_nav   = 'cart';
 $meta_noindex = true;
 $show_search  = true;

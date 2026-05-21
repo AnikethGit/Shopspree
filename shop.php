@@ -19,7 +19,7 @@ $products = $result['products'];
 $categories = get_categories();
 $messages = get_messages();
 
-$page_title       = 'Shop — PrintDepotCo';
+$page_title       = 'Shop — ' . SITE_NAME;
 $active_nav       = 'shop';
 $meta_description = 'Browse our full range of printing products — ink cartridges, toner, paper, and accessories.';
 $show_search      = true;
@@ -56,7 +56,7 @@ require_once __DIR__ . '/includes/header.php';
                         <i class="fab fa-telegram-plane fa-2x text-primary"></i>
                         <div class="ms-4">
                             <h6 class="text-uppercase mb-2">Free Shipping</h6>
-                            <p class="mb-0">Free shipping on orders above $200</p>
+                            <p class="mb-0">Free shipping on orders above <?php echo format_price(FREE_SHIPPING_THRESHOLD); ?></p>
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@ require_once __DIR__ . '/includes/header.php';
                         <i class="fas fa-credit-card fa-2x text-primary"></i>
                         <div class="ms-4">
                             <h6 class="text-uppercase mb-2">Receive Gift Card</h6>
-                            <p class="mb-0">Recieve gift all over oder $50</p>
+                            <p class="mb-0">Receive a gift card on orders over <?php echo format_price(GIFT_CARD_THRESHOLD); ?></p>
                         </div>
                     </div>
                 </div>
@@ -89,7 +89,7 @@ require_once __DIR__ . '/includes/header.php';
                         <i class="fa fa-phone-alt fa-2x text-primary"></i>
                         <div class="ms-4">
                             <h6 class="text-uppercase mb-2">Contact Us</h6>
-                            <p class="mb-0">contact@printdepotco.com</p>
+                            <p class="mb-0"><a href="mailto:<?php echo htmlspecialchars(SITE_EMAIL); ?>" class="text-dark"><?php echo htmlspecialchars(SITE_EMAIL); ?></a></p>
                         </div>
                     </div>
                 </div>

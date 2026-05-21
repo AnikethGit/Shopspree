@@ -1,10 +1,11 @@
 <?php
 // ── Site constants ─────────────────────────────────────────────────────────
-define('SITE_NAME',              'PrintDepotCo');
-define('SITE_URL',               rtrim(getenv('SITE_URL') ?: 'https://printdepotco.com/', '/') . '/');
-define('SITE_EMAIL',             'noreply@printdepotco.com');
-define('SITE_PHONE',             '+1-234-567-8900');
+define('SITE_NAME',              getenv('SITE_NAME')  ?: 'PrintDepotCo');
+define('SITE_URL',               rtrim(getenv('SITE_URL')  ?: 'https://printdepotco.com/', '/') . '/');
+define('SITE_EMAIL',             getenv('SITE_EMAIL') ?: 'noreply@printdepotco.com');
+define('SITE_PHONE',             getenv('SITE_PHONE') ?: '+1-234-567-8900');
 define('ADMIN_EMAIL',            getenv('ADMIN_EMAIL') ?: 'admin@printdepotco.com');
+define('COMPANY_ADDRESS',        getenv('COMPANY_ADDRESS') ?: '123 Street, New York, USA');
 
 define('CURRENCY',               'USD');
 define('CURRENCY_SYMBOL',        '$');
@@ -18,10 +19,17 @@ define('UPLOAD_DIR',             $_SERVER['DOCUMENT_ROOT'] . '/img/uploads/');
 define('MAIL_FROM',              'noreply@printdepotco.com');
 define('MAIL_FROM_NAME',         'PrintDepotCo');
 
-define('STANDARD_SHIPPING',      10.00);
-define('EXPRESS_SHIPPING',       20.00);
-define('FREE_SHIPPING_THRESHOLD', 100.00);
-define('TAX_RATE',               0.06);
+define('STANDARD_SHIPPING',       10.00);
+define('EXPRESS_SHIPPING',        20.00);
+define('FREE_SHIPPING_THRESHOLD', getenv('FREE_SHIPPING_THRESHOLD') ? (float)getenv('FREE_SHIPPING_THRESHOLD') : 100.00);
+define('GIFT_CARD_THRESHOLD',     getenv('GIFT_CARD_THRESHOLD')     ? (float)getenv('GIFT_CARD_THRESHOLD')     : 50.00);
+define('TAX_RATE',                getenv('TAX_RATE')                ? (float)getenv('TAX_RATE')                : 0.06);
+
+// Social media profile URLs — set in .env; empty string hides the icon
+define('SOCIAL_TWITTER',   getenv('SOCIAL_TWITTER')  ?: '');
+define('SOCIAL_FACEBOOK',  getenv('SOCIAL_FACEBOOK') ?: '');
+define('SOCIAL_YOUTUBE',   getenv('SOCIAL_YOUTUBE')  ?: '');
+define('SOCIAL_LINKEDIN',  getenv('SOCIAL_LINKEDIN') ?: '');
 
 // ── Error reporting ─────────────────────────────────────────────────────────
 if (getenv('APP_ENV') === 'development') {

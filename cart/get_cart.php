@@ -19,7 +19,7 @@ function get_cart_items(): array {
     return $stmt->fetchAll();
 }
 
-function calculate_cart_totals(array $cart_items, float $tax_rate = 0.06, float $shipping = 0): array {
+function calculate_cart_totals(array $cart_items, float $tax_rate = TAX_RATE, float $shipping = 0): array {
     $subtotal = 0.0;
     foreach ($cart_items as $item) {
         $subtotal += (float)$item['price'] * (int)$item['quantity'];
@@ -44,7 +44,7 @@ function calculate_cart_totals(array $cart_items, float $tax_rate = 0.06, float 
     ];
 }
 
-function get_cart_summary(float $tax_rate = 0.06, float $shipping = 0): array {
+function get_cart_summary(float $tax_rate = TAX_RATE, float $shipping = 0): array {
     $items  = get_cart_items();
     $totals = calculate_cart_totals($items, $tax_rate, $shipping);
     return ['items' => $items, 'totals' => $totals, 'is_empty' => empty($items)];

@@ -31,7 +31,7 @@ $items = $stmt->fetchAll();
 
 unset($_SESSION['last_order_id'], $_SESSION['last_order_db_id']);
 
-$page_title   = 'Order Confirmed — PrintDepotCo';
+$page_title   = 'Order Confirmed — ' . SITE_NAME;
 $meta_noindex = true;
 $extra_head   = '<style>
         .thank-you-container {

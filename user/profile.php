@@ -33,7 +33,7 @@ $orders_stmt = $pdo->prepare(
 $orders_stmt->execute([$user_id, $user_email]);
 $orders = $orders_stmt->fetchAll();
 
-$page_title   = 'My Profile — PrintDepotCo';
+$page_title   = 'My Profile — ' . SITE_NAME;
 $active_nav   = 'profile';
 $meta_noindex = true;
 $extra_head   = '<style>

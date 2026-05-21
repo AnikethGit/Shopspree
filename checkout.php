@@ -41,7 +41,7 @@ try {
     die('ERROR: ' . htmlspecialchars($e->getMessage()));
 }
 
-$page_title   = 'Checkout — PrintDepotCo';
+$page_title   = 'Checkout — ' . SITE_NAME;
 $active_nav   = 'checkout';
 $meta_noindex = true;
 require_once __DIR__ . '/includes/header.php';

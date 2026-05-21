@@ -25,7 +25,7 @@ if (!$product) {
 $messages   = get_messages();
 $categories = get_categories();
 
-$page_title       = htmlspecialchars($product['name']) . ' — PrintDepotCo';
+$page_title       = htmlspecialchars($product['name']) . ' — ' . SITE_NAME;
 $active_nav       = 'shop';
 $meta_description = htmlspecialchars(mb_strimwidth(strip_tags($product['description'] ?? $product['name']), 0, 155, '…'));
 $show_search      = true;

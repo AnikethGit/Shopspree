@@ -34,7 +34,7 @@ $status_colors = [
 
 $current_status = $order ? $order['order_status'] : '';
 $status_color   = $status_colors[$current_status] ?? '#6C757D';
-$page_title   = 'Track Your Order — PrintDepotCo';
+$page_title   = 'Track Your Order — ' . SITE_NAME;
 $active_nav   = 'track';
 $meta_noindex = true;
 $show_search  = true;

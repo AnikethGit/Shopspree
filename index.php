@@ -65,9 +65,9 @@ if ($top_column_found) {
 $stmt->execute();
 $top_result = $stmt->fetchAll();
 
-$page_title       = 'PrintDepotCo — Printers & Accessories';
+$page_title       = SITE_NAME . ' — Printers & Accessories';
 $active_nav       = 'home';
-$meta_description = 'Print Depot Co — Premium ink cartridges, toner, paper, and printing accessories. Fast delivery, great prices, expert support.';
+$meta_description = SITE_NAME . ' — Premium ink cartridges, toner, paper, and printing accessories. Fast delivery, great prices, expert support.';
 $show_search      = true;
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -152,7 +152,7 @@ require_once __DIR__ . '/includes/header.php';
                         <i class="fab fa-telegram-plane fa-2x text-primary"></i>
                         <div class="ms-4">
                             <h6 class="text-uppercase mb-2">Free Shipping</h6>
-                            <p class="mb-0">Free shipping on orders above $200</p>
+                            <p class="mb-0">Free shipping on orders above <?php echo format_price(FREE_SHIPPING_THRESHOLD); ?></p>
                         </div>
                     </div>
                 </div>
@@ -174,7 +174,7 @@ require_once __DIR__ . '/includes/header.php';
                         <i class="fas fa-credit-card fa-2x text-primary"></i>
                         <div class="ms-4">
                             <h6 class="text-uppercase mb-2">Receive Gift Card</h6>
-                            <p class="mb-0">Receive gift all over order $50</p>
+                            <p class="mb-0">Receive a gift card on orders over <?php echo format_price(GIFT_CARD_THRESHOLD); ?></p>
                         </div>
                     </div>
                 </div>

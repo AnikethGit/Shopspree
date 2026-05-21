@@ -19,7 +19,7 @@ $_a = $active_nav ?? '';
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title><?php echo htmlspecialchars($page_title ?? 'PrintDepotCo'); ?></title>
+    <title><?php echo htmlspecialchars($page_title ?? SITE_NAME); ?></title>
     <?php if (!empty($meta_noindex)): ?>
     <meta name="robots" content="noindex, nofollow">
     <?php endif; ?>
@@ -68,7 +68,7 @@ $_a = $active_nav ?? '';
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
                 <small class="text-dark">Call Us:</small>
-                <a href="#" class="text-muted">&nbsp;<?php echo htmlspecialchars(defined('SITE_PHONE') ? SITE_PHONE : '(+012) 1234 567890'); ?></a>
+                <a href="tel:<?php echo htmlspecialchars(SITE_PHONE); ?>" class="text-muted">&nbsp;<?php echo htmlspecialchars(SITE_PHONE); ?></a>
             </div>
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
