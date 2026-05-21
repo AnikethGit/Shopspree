@@ -150,9 +150,9 @@ CREATE TABLE `products` (
 -- support guest carts without a users FK conflict.
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE `cart_items` (
-  `id`          int      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id`          int(11)  NOT NULL AUTO_INCREMENT,
   `cart_token`  char(64) NOT NULL,
-  `product_id`  int      UNSIGNED NOT NULL,
+  `product_id`  int(11)  NOT NULL,
   `quantity`    smallint UNSIGNED NOT NULL DEFAULT 1,
   `created_at`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -360,9 +360,9 @@ COMMIT;
 
 -- ── 1. Create cart_items (new token-based cart) ───────────────────────────────
 CREATE TABLE IF NOT EXISTS `cart_items` (
-  `id`          int      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id`          int(11)  NOT NULL AUTO_INCREMENT,
   `cart_token`  char(64) NOT NULL,
-  `product_id`  int      UNSIGNED NOT NULL,
+  `product_id`  int(11)  NOT NULL,
   `quantity`    smallint UNSIGNED NOT NULL DEFAULT 1,
   `created_at`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
